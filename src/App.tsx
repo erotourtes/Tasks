@@ -1,4 +1,5 @@
 import "./App.css";
+import Movable from "./components/Movable";
 import TreeView from "./components/TreeView";
 
 function App() {
@@ -8,7 +9,7 @@ function App() {
         <TreeView />
 
         <div className="flex-1 overflow-y-auto">
-          <div className="bg-yellow-800 h-screen"></div>
+          <Movable />
         </div>
       </div>
     </>
