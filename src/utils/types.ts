@@ -8,3 +8,8 @@ export type Tab = {
   children: Tab[];
 };
 
+export const DragTypes = {
+  TAB: "tab",
+};
+
+export type MoveType = "inside" | "after"
