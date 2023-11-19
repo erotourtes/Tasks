@@ -1,52 +1,46 @@
 import { useState } from "react";
-import { generateId } from "../utils/utils.ts";
-import { MoveType, Tab } from "../utils/types.ts";
-import * as Tabs from "../utils/TabsMethods.ts";
+import { MoveType } from "../utils/types.ts";
+import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
+import { TabNode } from "../utils/TabsMethods.ts";
 
 function TreeView() {
   const treeViewWidth = 300;
-  const [tabs, setTabs] = useState<Tab[]>(Tabs.generateTabs());
+  const [tabs, setTabs] = useState<TabNode[]>([]);
+  const str = new Tabs(tabs);
 
-  const removeTab = (id: number) => {
-    const newTabs = [...tabs];
-    const tab = newTabs[id];
+  const removeTab = (id: string) => setTabs([...str.remove(id).tabNodes]);
+  const toggleOpen = (id: string) => setTabs(str.toggleOpen(id).tabNodes);
 
-    if (tab.isOpen) Tabs.sRemoveTab(newTabs, tab);
-    else Tabs.sRemoveTabAndChildren(newTabs, id);
-
-    setTabs(newTabs);
-  };
-
-  const toggleOpen = (id: number) => {
-    const newTabs = [...tabs];
-    const tab = newTabs[id];
-
-    tab.isOpen = !tab.isOpen;
-    Tabs.sToggleHideForChildren(tab, !tab.isOpen);
-
-    setTabs(newTabs);
-  };
-
-  console.log(tabs);
-
-  const moveTab = (srcIndex: string, dstIndex: number, type: MoveType) => {
-    const newTabs = [...tabs];
-    const dstTab = newTabs[dstIndex];
-    const srcTab = Tabs.sFindTab(newTabs, srcIndex);
-    if (!srcTab) throw new Error("Severe error: srcTab not found");
-
-    if (dstTab.id === srcTab.id) return;
-
+  const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
     if (type === "inside") {
-      Tabs.sMoveTabInside(newTabs, srcTab, dstTab);
-    } else if (type === "after") {
-      // Tabs.sInsertTabAfter(newTabs, srcIndex, dstTab);
-    } else {
-      throw new Error("Invalid move type");
+      setTabs(str.moveInside(srcIndex, dstIndex).tabNodes);
     }
+    // this problem
+    // const actions: {
+    //   [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
+    // } = {
+    //   inside: str.moveInside,
+    //   after: str.moveAfter,
+    // };
+    //
+    // setTabs(actions[type](srcIndex, dstIndex).tabNodes);
+  };
 
-    setTabs(newTabs);
+  const renderTabs = (tabs?: TabNode[]) => {
+    return tabs?.map((tab) => {
+      return (
+        <TreeTab
+          key={tab.id}
+          tab={tab}
+          destroyTab={() => removeTab(tab.id)}
+          toggleOpen={() => toggleOpen(tab.id)}
+          moveTab={(srcID, type) => moveTab(srcID, tab.id, type)}
+        >
+          {renderTabs(tab.__children)}
+        </TreeTab>
+      );
+    });
   };
 
   return (
@@ -55,37 +49,11 @@ function TreeView() {
         style={{ width: treeViewWidth }}
         className="dark:bg-zinc-950 dark:text-zinc-200 overflow-y-auto space-y-2 p-2"
       >
-        {tabs.map((tab, index) => {
-          if (tab.isHidden) return;
-
-          return (
-            <TreeTab
-              key={tab.id}
-              tab={tab}
-              toggleOpen={() => toggleOpen(index)}
-              destroyTab={() => removeTab(index)}
-              moveTab={(sourceTab, type: MoveType) =>
-                moveTab(sourceTab, index, type)
-              }
-            />
-          );
-        })}
+        {renderTabs(tabs)}
 
         <button
           className="dark:hover:bg-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300"
-          onClick={() =>
-            setTabs([
-              ...tabs,
-              {
-                title: `Tab ${tabs.length + 1}`,
-                level: 0,
-                id: generateId(),
-                isOpen: true,
-                isHidden: false,
-                children: [],
-              },
-            ])
-          }
+          onClick={() => setTabs(str.addTab(`Tab ${tabs.length + 1}`).tabNodes)}
         >
           Add Tab
         </button>

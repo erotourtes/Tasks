@@ -1,12 +1,14 @@
 import { useDrag, useDrop } from "react-dnd";
 import { CloseIcon, ArrowIcon } from "../assets/icons.tsx";
-import { Tab, DragTypes } from "../utils/types.ts";
+import { DragTypes } from "../utils/types.ts";
+import { TabNode } from "../utils/TabsMethods.ts";
 
 interface TreeTabProps {
-  tab: Tab;
+  tab: TabNode;
   destroyTab: () => void;
   toggleOpen: () => void;
   moveTab: (to: string, type: "inside" | "after") => void;
+  children?: React.ReactNode;
 }
 
 const howeverText = `
@@ -14,9 +16,8 @@ const howeverText = `
   hover:bg-zinc-300 hover:text-zinc-800
 `;
 
-function TreeTab({ tab, destroyTab, toggleOpen, moveTab }: TreeTabProps) {
-  const isParent = tab.children.length > 0;
-  const { title, level, isOpen } = tab;
+function TreeTab({ children, tab, destroyTab, toggleOpen, moveTab }: TreeTabProps) {
+  const { title, level, isOpen } = tab.state;
 
   const [{ isDragging }, dragRef] = useDrag(() => ({
     type: DragTypes.TAB,
@@ -62,7 +63,7 @@ function TreeTab({ tab, destroyTab, toggleOpen, moveTab }: TreeTabProps) {
             className={`mr-2 ${!isOpen && "-rotate-90"}`}
             onClick={toggleOpen}
           >
-            {isParent && <ArrowIcon className="w-4 h-4" />}
+            {tab.hasChildren && <ArrowIcon className="w-4 h-4" />}
           </span>
           <p className="text-sm font-bold line-clamp-1">{title}</p>
 
@@ -74,6 +75,7 @@ function TreeTab({ tab, destroyTab, toggleOpen, moveTab }: TreeTabProps) {
           </div>
         </div>
       </div>
+      {isOpen && children}
     </>
   );
 }
