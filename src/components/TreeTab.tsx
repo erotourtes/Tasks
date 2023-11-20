@@ -1,5 +1,5 @@
 import { useDrag, useDrop } from "react-dnd";
-import { CloseIcon, ArrowIcon } from "../assets/icons.tsx";
+import { CloseIcon, ArrowIcon } from "../assets/icons";
 import { DragTypes } from "../utils/types.ts";
 import { TabNode } from "../utils/TabsMethods.ts";
 
@@ -16,40 +16,49 @@ const howeverText = `
   hover:bg-zinc-300 hover:text-zinc-800
 `;
 
-function TreeTab({ children, tab, destroyTab, toggleOpen, moveTab }: TreeTabProps) {
+function TreeTab({
+  children,
+  tab,
+  destroyTab,
+  toggleOpen,
+  moveTab,
+}: TreeTabProps) {
   const { title, level, isOpen } = tab.state;
 
-  const [{ isDragging }, dragRef] = useDrag(() => ({
-    type: DragTypes.TAB,
-    item: { id: tab.id, tab },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
+  const [{ isDragging }, dragRef] = useDrag(
+    () => ({
+      type: DragTypes.TAB,
+      item: { id: tab.id, tab },
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging(),
+      }),
     }),
-  }), [tab]);
+    [tab],
+  );
 
-  const [{ isOver }, dropRef] = useDrop(() => ({
-    accept: DragTypes.TAB,
-    drop: (item: { id: string }, monitor) => {
-      // item is the dragged tab
-      const dstTab = item.id;
-      
-      moveTab(dstTab, "inside");
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+  const [{ isOver }, dropRef] = useDrop(
+    () => ({
+      accept: DragTypes.TAB,
+      drop: (item: { id: string }, monitor) => {
+        // item is the dragged tab
+        const dstTab = item.id;
+
+        moveTab(dstTab, "inside");
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
     }),
-  }), [moveTab]);
+    [moveTab],
+  );
 
   return (
     <>
       <div
         ref={(node) => dragRef(dropRef(node))}
-        className={`text-inherit w-full flex px-2 ${
-          isDragging && "opacity-50"
-        }`}
+        className={`text-inherit w-full flex ${isDragging && "opacity-50"}`}
       >
         <div
-          style={{ marginLeft: level * 20 }}
           className={`flex box-border flex-1 relative items-center py-2 rounded-lg ${howeverText} 
             border
             ${
@@ -75,7 +84,8 @@ function TreeTab({ children, tab, destroyTab, toggleOpen, moveTab }: TreeTabProp
           </div>
         </div>
       </div>
-      {isOpen && children}
+
+      {isOpen && <div className="ml-8">{children}</div>}
     </>
   );
 }

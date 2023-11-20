@@ -9,22 +9,18 @@ function TreeView() {
   const [tabs, setTabs] = useState<TabNode[]>([]);
   const str = new Tabs(tabs);
 
-  const removeTab = (id: string) => setTabs([...str.remove(id).tabNodes]);
-  const toggleOpen = (id: string) => setTabs(str.toggleOpen(id).tabNodes);
+  const removeTab = (id: string) => setTabs([...str.remove(id).flatTabNodes]);
+  const toggleOpen = (id: string) => setTabs(str.toggleOpen(id).flatTabNodes);
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
-    if (type === "inside") {
-      setTabs(str.moveInside(srcIndex, dstIndex).tabNodes);
-    }
-    // this problem
-    // const actions: {
-    //   [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
-    // } = {
-    //   inside: str.moveInside,
-    //   after: str.moveAfter,
-    // };
-    //
-    // setTabs(actions[type](srcIndex, dstIndex).tabNodes);
+    const actions: {
+      [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
+    } = {
+      inside: str.moveInside.bind(str),
+      after: str.moveAfter.bind(str),
+    };
+
+    setTabs(actions[type](srcIndex, dstIndex).flatTabNodes);
   };
 
   const renderTabs = (tabs?: TabNode[]) => {
@@ -49,11 +45,13 @@ function TreeView() {
         style={{ width: treeViewWidth }}
         className="dark:bg-zinc-950 dark:text-zinc-200 overflow-y-auto space-y-2 p-2"
       >
-        {renderTabs(tabs)}
+        {renderTabs(str.flatRoot)}
 
         <button
           className="dark:hover:bg-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300"
-          onClick={() => setTabs(str.addTab(`Tab ${tabs.length + 1}`).tabNodes)}
+          onClick={() =>
+            setTabs(str.addTab(`Tab ${tabs.length + 1}`).flatTabNodes)
+          }
         >
           Add Tab
         </button>
