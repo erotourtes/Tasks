@@ -108,7 +108,7 @@ function TreeTab({
             {tab.hasChildren && <ArrowIcon className="w-4 h-4" />}
           </span>
           <p className="text-sm font-bold line-clamp-1">
-            {/* title */ level + "     " + title}
+            {/* title */ level + "     " + tab.id.slice(0, 2) + "        " + tab.__parent?.id.slice(0, 2)}
           </p>
 
           <div

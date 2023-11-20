@@ -8,7 +8,7 @@ function Movable() {
   const [{ isOver }, dropRef] = useDrop(() => ({
     accept: DragTypes.TAB,
     drop: (item) => {
-      setCurrentTab(item.tab as Tab);
+      // setCurrentTab(item.tab);
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),

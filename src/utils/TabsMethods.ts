@@ -172,12 +172,13 @@ export class TabNode {
 }
 
 export class Tabs {
-  #root = new TabNode("root", undefined);
+  #root = new TabNode("root     " + generateId(), undefined);
   #rootID = "__root__";
   #tabs: { [key: string]: TabNode } = {};
 
   constructor(flatTabNodes?: TabNode[]) {
     this.#root.__id = this.#rootID;
+    console.log(`root title: ${this.#root.title}`)
 
     if (!flatTabNodes) return;
     this.#checkUniqueness(flatTabNodes);

@@ -13,6 +13,7 @@ function TreeView() {
   const toggleOpen = (id: string) => setTabs(str.toggleOpen(id).flatTabNodes);
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
+    console.log(`Moving ${srcIndex} to ${dstIndex} ${type}`)
     const actions: {
       [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
     } = {
