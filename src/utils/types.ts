@@ -1,3 +1,5 @@
+import { TabNode } from "./TabsMethods";
+
 export type Tab = {
   title: string;
   level: number;
@@ -12,4 +14,10 @@ export const DragTypes = {
   TAB: "tab",
 };
 
-export type MoveType = "inside" | "after"
+export type MoveType = "inside" | "after" | "firstChild"
+
+
+export type TabDragItem = {
+  id: string;
+  tab: TabNode;
+};

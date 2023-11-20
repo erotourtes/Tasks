@@ -18,6 +18,7 @@ function TreeView() {
     } = {
       inside: str.moveInside.bind(str),
       after: str.moveAfter.bind(str),
+      firstChild: str.moveAtBeginning.bind(str),
     };
 
     setTabs(actions[type](srcIndex, dstIndex).flatTabNodes);
@@ -43,7 +44,7 @@ function TreeView() {
     <>
       <div
         style={{ width: treeViewWidth }}
-        className="dark:bg-zinc-950 dark:text-zinc-200 overflow-y-auto space-y-2 p-2"
+        className="dark:bg-zinc-950 dark:text-zinc-200 overflow-y-auto p-2"
       >
         {renderTabs(str.flatRoot)}
 

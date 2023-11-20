@@ -25,6 +25,54 @@ export class TabNode {
       child.__level = this.#level + 1;
       child.__parent = this;
       this.#children.push(child);
+      child.updateChildrenLevel();
+    }
+  }
+
+  updateChildrenLevel() {
+    for (const child of this.#children) {
+      child.__level = this.#level + 1;
+      child.updateChildrenLevel();
+    }
+  }
+
+  addSiblingAfter(...tabs: TabNode[]) {
+    for (const tab of tabs) {
+      tab.__level = this.level;
+    }
+
+    this.__parent!.addChildNextTo(this, ...tabs);
+  }
+
+  addSiblingsAtBeginning(...tabs: TabNode[]) {
+    for (const tab of tabs) {
+      tab.__level = this.level;
+    }
+
+    this.__parent!.addChildNextTo(undefined, ...tabs);
+  }
+
+  /**
+  Adds child after the tab
+  if the tab is undefined, adds children at index 0
+  */
+  addChildNextTo(tab?: TabNode, ...children: TabNode[]) {
+    if (tab === undefined) {
+      for (const child of children) {
+        child.__level = this.#level + 1;
+        child.__parent = this;
+      }
+
+      this.#children.splice(0, 0, ...children);
+      return;
+    }
+
+    const index = this.#children.indexOf(tab);
+    if (index === -1) throw new Error("Tab not found");
+    for (const child of children) {
+      child.__level = this.#level + 1;
+      child.__parent = this;
+      this.#children.splice(index + 1, 0, child);
     }
   }
 
@@ -104,6 +152,18 @@ export class TabNode {
     this.#isOpen = isOpen;
   }
 
+  isFirst() {
+    const parent = this.#parent
+    if (!parent) throw new Error("Root can't be checked")
+    return this.#getPositionInChildren() === 0;
+  }
+
+  #getPositionInChildren() {
+    const parent = this.#parent
+    if (!parent) throw new Error("Root can't be checked")
+    return parent.__children.findIndex((el) => el.id === this.id)
+  }
+
   toString() {
     return `TabNode(title:${this.#title}, level:${this.#level}, id:${
       this.#id
@@ -118,7 +178,6 @@ export class Tabs {
 
   constructor(flatTabNodes?: TabNode[]) {
     this.#root.__id = this.#rootID;
-    console.log("level of root is", this.#root.level);
 
     if (!flatTabNodes) return;
     this.#checkUniqueness(flatTabNodes);
@@ -134,8 +193,6 @@ export class Tabs {
         this.#root.addChild(node);
       }
     }
-
-    console.log("this.#root", this.#root);
   }
 
   addTab(...titles: string[]) {
@@ -169,29 +226,112 @@ export class Tabs {
     return this;
   }
 
-  /**
-  Move the tab inside the dstTab
-  */
-  moveInside(srcID: string, dstID: string) {
-    console.log(`moveInside(${srcID}, ${dstID})`);
-    if (srcID == dstID) return this;
-
+  moveInside(srcID: string, dstID: string): Tabs {
     const srcTab = this.#tabs[srcID];
-    const dstTab = this.#tabs[dstID];
-
-    if (srcTab.isParentOf(dstTab)) return this;
-    console.log("allow moving")
-
-    srcTab.__parent?.removeChild(srcTab);
-    dstTab.addChild(srcTab);
-
-    this.#checkUniqueness(this.flatTabNodes);
+    if (!srcTab.isOpen) this.moveInsideWithChildren(srcID, dstID);
+    else this.moveInsideWithoutChildren(srcID, dstID);
 
     return this;
   }
 
-  moveAfter(srcID: string, dstID: string) {
+  moveInsideWithChildren(srcID: string, dstID: string) {
+    if (srcID == dstID) return;
+
+    const srcTab = this.#tabs[srcID];
+    const dstTab = this.#tabs[dstID];
+
+    if (srcTab.isParentOf(dstTab)) return;
+
+    srcTab.removeItself();
+    dstTab.addChild(srcTab);
+
+    this.#checkUniqueness(this.flatTabNodes);
+  }
+
+  moveInsideWithoutChildren(srcID: string, dstID: string) {
+    if (srcID == dstID) return;
+
+    const srcTab = this.#tabs[srcID];
+    const dstTab = this.#tabs[dstID];
+
+    if (srcTab.isParentOf(dstTab)) return;
+
+    srcTab.addSiblingAfter(...srcTab.__children);
+    srcTab.removeAllChildren();
+    srcTab.removeItself();
+    dstTab.addChild(srcTab);
+  }
+
+  moveAfter(srcID: string, dstID: string): Tabs {
+    const srcTab = this.#tabs[srcID];
+
+    if (!srcTab.isOpen) this.moveAfterWithChildren(srcID, dstID);
+    else this.moveAfterWithoutChildren(srcID, dstID);
+
     return this;
+  }
+
+  moveAfterWithChildren(srcID: string, dstID: string) {
+    if (srcID == dstID) return;
+
+    const srcTab = this.#tabs[srcID];
+    const dstTab = this.#tabs[dstID];
+
+    if (srcTab.isParentOf(dstTab)) return;
+
+    srcTab.removeItself();
+    dstTab.addSiblingAfter(srcTab);
+  }
+
+  moveAfterWithoutChildren(srcID: string, dstID: string) {
+    if (srcID == dstID) return;
+
+    const srcTab = this.#tabs[srcID];
+    const dstTab = this.#tabs[dstID];
+
+    if (srcTab.isParentOf(dstTab)) return;
+
+    srcTab.addSiblingAfter(...srcTab.__children);
+    srcTab.removeAllChildren();
+    srcTab.removeItself();
+    dstTab.addSiblingAfter(srcTab);
+  }
+
+  moveAtBeginning(srcID: string, dstID: string): Tabs {
+    const srcTab = this.#tabs[srcID];
+
+    if (!srcTab.isOpen) this.moveAtBeginningWithChildren(srcID, dstID);
+    else this.moveAtBeginningWithoutChildren(srcID, dstID);
+
+    return this;
+  }
+
+  moveAtBeginningWithChildren(srcID: string, dstID: string) {
+    if (srcID == dstID) return;
+
+    const srcTab = this.#tabs[srcID];
+    const dstTab = this.#tabs[dstID];
+
+    if (srcTab.isParentOf(dstTab)) return;
+
+    srcTab.removeItself();
+    dstTab.addSiblingsAtBeginning(srcTab);
+
+    console.log("moving");
+  }
+
+  moveAtBeginningWithoutChildren(srcID: string, dstID: string) {
+    if (srcID == dstID) return;
+
+    const srcTab = this.#tabs[srcID];
+    const dstTab = this.#tabs[dstID];
+
+    if (srcTab.isParentOf(dstTab)) return;
+
+    srcTab.addSiblingsAtBeginning(...srcTab.__children);
+    srcTab.removeAllChildren();
+    srcTab.removeItself();
+    dstTab.addSiblingsAtBeginning(srcTab);
   }
 
   removeTabAndChildren(tabID: string) {

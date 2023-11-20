@@ -1,13 +1,13 @@
 import { useDrag, useDrop } from "react-dnd";
 import { CloseIcon, ArrowIcon } from "../assets/icons";
-import { DragTypes } from "../utils/types.ts";
+import { DragTypes, MoveType, TabDragItem } from "../utils/types.ts";
 import { TabNode } from "../utils/TabsMethods.ts";
 
 interface TreeTabProps {
   tab: TabNode;
   destroyTab: () => void;
   toggleOpen: () => void;
-  moveTab: (to: string, type: "inside" | "after") => void;
+  moveTab: (to: string, type: MoveType) => void;
   children?: React.ReactNode;
 }
 
@@ -15,6 +15,37 @@ const howeverText = `
   dark:hover:bg-zinc-700 dark:hover:text-zinc-50
   hover:bg-zinc-300 hover:text-zinc-800
 `;
+
+function DevideLine({
+  tab,
+  moveTab,
+  moveType = "after",
+}: {
+  tab: TabNode;
+  moveTab: (to: string, type: MoveType) => void;
+  moveType?: MoveType 
+}) {
+  const [{ isOver }, dropRef] = useDrop(() => ({
+    accept: DragTypes.TAB,
+    drop: (item: TabDragItem, monitor) => {
+      // tab - that is dropped on
+      // item - that is dragged
+      moveTab(item.id, moveType);
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }));
+
+  return (
+    <div
+      ref={dropRef}
+      className={`h-1 w-full rounded-lg ${
+        isOver ? "dark:bg-zinc-200 bg-zinc-800" : "bg-transparent"
+      }`}
+    ></div>
+  );
+}
 
 function TreeTab({
   children,
@@ -39,7 +70,7 @@ function TreeTab({
   const [{ isOver }, dropRef] = useDrop(
     () => ({
       accept: DragTypes.TAB,
-      drop: (item: { id: string }, monitor) => {
+      drop: (item: TabDragItem, monitor) => {
         // item is the dragged tab
         const dstTab = item.id;
 
@@ -54,6 +85,8 @@ function TreeTab({
 
   return (
     <>
+      {tab.isFirst() && <DevideLine tab={tab} moveTab={moveTab} moveType={"firstChild"} />}
+
       <div
         ref={(node) => dragRef(dropRef(node))}
         className={`text-inherit w-full flex ${isDragging && "opacity-50"}`}
@@ -74,7 +107,9 @@ function TreeTab({
           >
             {tab.hasChildren && <ArrowIcon className="w-4 h-4" />}
           </span>
-          <p className="text-sm font-bold line-clamp-1">{title}</p>
+          <p className="text-sm font-bold line-clamp-1">
+            {/* title */ level + "     " + title}
+          </p>
 
           <div
             className={`text-sm font-bold cursor-pointer flex items-center absolute right-2 top-1/2 transform -translate-y-1/2 ${howeverText}`}
@@ -86,6 +121,8 @@ function TreeTab({
       </div>
 
       {isOpen && <div className="ml-8">{children}</div>}
+
+      <DevideLine tab={tab} moveTab={moveTab} />
     </>
   );
 }
