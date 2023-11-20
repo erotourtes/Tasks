@@ -13,16 +13,19 @@ function TreeView() {
   const toggleOpen = (id: string) => setTabs(str.toggleOpen(id).flatTabNodes);
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
-    console.log(`Moving ${srcIndex} to ${dstIndex} ${type}`)
-    const actions: {
-      [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
-    } = {
-      inside: str.moveInside.bind(str),
-      after: str.moveAfter.bind(str),
-      firstChild: str.moveAtBeginning.bind(str),
-    };
+    // WTF: why does moveTab use old str instance?
+    setTabs((prev) => {
+      const str = new Tabs(prev);
+      const actions: {
+        [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
+      } = {
+        inside: str.moveInside.bind(str),
+        after: str.moveAfter.bind(str),
+        firstChild: str.moveAtBeginning.bind(str),
+      };
 
-    setTabs(actions[type](srcIndex, dstIndex).flatTabNodes);
+      return actions[type](srcIndex, dstIndex).flatTabNodes;
+    });
   };
 
   const renderTabs = (tabs?: TabNode[]) => {

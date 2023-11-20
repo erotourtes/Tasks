@@ -153,15 +153,15 @@ export class TabNode {
   }
 
   isFirst() {
-    const parent = this.#parent
-    if (!parent) throw new Error("Root can't be checked")
+    const parent = this.#parent;
+    if (!parent) throw new Error("Root can't be checked");
     return this.#getPositionInChildren() === 0;
   }
 
   #getPositionInChildren() {
-    const parent = this.#parent
-    if (!parent) throw new Error("Root can't be checked")
-    return parent.__children.findIndex((el) => el.id === this.id)
+    const parent = this.#parent;
+    if (!parent) throw new Error("Root can't be checked");
+    return parent.__children.findIndex((el) => el.id === this.id);
   }
 
   toString() {
@@ -317,8 +317,6 @@ export class Tabs {
 
     srcTab.removeItself();
     dstTab.addSiblingsAtBeginning(srcTab);
-
-    console.log("moving");
   }
 
   moveAtBeginningWithoutChildren(srcID: string, dstID: string) {
