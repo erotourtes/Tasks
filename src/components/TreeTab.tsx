@@ -17,17 +17,17 @@ const howeverText = `
 `;
 
 function DevideLine({
-  tab,
+  // tab,
   moveTab,
   moveType = "after",
 }: {
   tab: TabNode;
   moveTab: (to: string, type: MoveType) => void;
-  moveType?: MoveType 
+  moveType?: MoveType;
 }) {
   const [{ isOver }, dropRef] = useDrop(() => ({
     accept: DragTypes.TAB,
-    drop: (item: TabDragItem, monitor) => {
+    drop: (item: TabDragItem) => {
       // tab - that is dropped on
       // item - that is dragged
       moveTab(item.id, moveType);
@@ -54,7 +54,7 @@ function TreeTab({
   toggleOpen,
   moveTab,
 }: TreeTabProps) {
-  const { title, level, isOpen } = tab.state;
+  const { level, isOpen } = tab.state;
 
   const [{ isDragging }, dragRef] = useDrag(
     () => ({
@@ -70,7 +70,7 @@ function TreeTab({
   const [{ isOver }, dropRef] = useDrop(
     () => ({
       accept: DragTypes.TAB,
-      drop: (item: TabDragItem, monitor) => {
+      drop: (item: TabDragItem) => {
         // item is the dragged tab
         const dstTab = item.id;
 
