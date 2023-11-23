@@ -1,10 +1,10 @@
 import { useDrag, useDrop } from "react-dnd";
 import { CloseIcon, ArrowIcon } from "../assets/icons";
-import { DragTypes, MoveType, TabDragItem } from "../utils/types.ts";
+import { DragTypes, MoveType, TabDragItem, Task } from "../utils/types.ts";
 import { TabNode } from "../utils/TabsMethods.ts";
 
 interface TreeTabProps {
-  tab: TabNode;
+  tab: TabNode<Task>;
   destroyTab: () => void;
   toggleOpen: () => void;
   moveTab: (to: string, type: MoveType) => void;
@@ -21,7 +21,7 @@ function DevideLine({
   moveTab,
   moveType = "after",
 }: {
-  tab: TabNode;
+  tab: TabNode<Task>;
   moveTab: (to: string, type: MoveType) => void;
   moveType?: MoveType;
 }) {
@@ -55,6 +55,7 @@ function TreeTab({
   moveTab,
 }: TreeTabProps) {
   const { level, isOpen } = tab.state;
+  const task = tab.getForeign();
 
   const [{ isDragging }, dragRef] = useDrag(
     () => ({
@@ -108,7 +109,7 @@ function TreeTab({
             {tab.hasChildren && <ArrowIcon className="w-4 h-4" />}
           </span>
           <p className="text-sm font-bold line-clamp-1">
-            {/* title */ level + "     " + tab.id.slice(0, 2) + "        " + tab.__parent?.id.slice(0, 2)}
+            {`${task.title} ${level} ${tab.id.slice(0, 2)} ${tab.__parent?.id.slice(0, 2)}`}
           </p>
 
           <div

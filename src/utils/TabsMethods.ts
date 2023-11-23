@@ -1,15 +1,20 @@
 import { generateId } from "./utils";
 
-export class TabNode {
-  #title: string;
+export class TabNode<T> {
   #level: number;
   #id: string = generateId();
   #isOpen: boolean = true;
-  #children: TabNode[] = [];
-  #parent?: TabNode;
+  #children: TabNode<T>[] = [];
+  #parent?: TabNode<T>;
+  #foreign?: T;
 
-  constructor(title: string, parent?: TabNode, isOpen = true) {
-    this.#title = title;
+  getForeign() {
+    if (!this.#foreign) throw new Error("Foreign not found");
+    return this.#foreign;
+  }
+
+  constructor(foreign?: T, parent?: TabNode<T>, isOpen = false) {
+    this.#foreign = foreign;
     this.#level = parent ? parent.#level + 1 : -1;
     this.#parent = parent;
     this.#isOpen = isOpen;
@@ -19,7 +24,7 @@ export class TabNode {
     this.#level = level;
   }
 
-  addChild(...children: TabNode[]) {
+  addChild(...children: TabNode<T>[]) {
     for (const child of children) {
       // WTF typescript refresher doesn't allow to access private properties of the same class (works with double refresh)
       child.__level = this.#level + 1;
@@ -36,7 +41,7 @@ export class TabNode {
     }
   }
 
-  addSiblingAfter(...tabs: TabNode[]) {
+  addSiblingAfter(...tabs: TabNode<T>[]) {
     for (const tab of tabs) {
       tab.__level = this.level;
     }
@@ -44,7 +49,7 @@ export class TabNode {
     this.__parent!.addChildNextTo(this, ...tabs);
   }
 
-  addSiblingsAtBeginning(...tabs: TabNode[]) {
+  addSiblingsAtBeginning(...tabs: TabNode<T>[]) {
     for (const tab of tabs) {
       tab.__level = this.level;
     }
@@ -56,7 +61,7 @@ export class TabNode {
   Adds child after the tab
   if the tab is undefined, adds children at index 0
   */
-  addChildNextTo(tab?: TabNode, ...children: TabNode[]) {
+  addChildNextTo(tab?: TabNode<T>, ...children: TabNode<T>[]) {
     if (tab === undefined) {
       for (const child of children) {
         child.__level = this.#level + 1;
@@ -76,7 +81,7 @@ export class TabNode {
     }
   }
 
-  removeChild(child: TabNode) {
+  removeChild(child: TabNode<T>) {
     const index = this.#children.indexOf(child);
     if (index === -1) throw new Error("Child not found");
     this.#children.splice(index, 1);
@@ -91,7 +96,7 @@ export class TabNode {
     this.#children = [];
   }
 
-  isParentOf(tab: TabNode) {
+  isParentOf(tab: TabNode<T>) {
     const children = this.#children;
     for (const child of children) {
       if (tab.id === child.#id) return true;
@@ -101,7 +106,6 @@ export class TabNode {
 
   get state() {
     return {
-      title: this.#title,
       level: this.#level,
       id: this.#id,
       isOpen: this.#isOpen,
@@ -112,16 +116,12 @@ export class TabNode {
     return this.#children.length > 0;
   }
 
-  get title() {
-    return this.#title;
-  }
-
   get id() {
     return this.#id;
   }
 
-  get childrenTitles() {
-    return this.#children.map((child) => child.title);
+  get childrenIDs() {
+    return this.#children.map((child) => child.id);
   }
 
   get __children() {
@@ -136,7 +136,7 @@ export class TabNode {
     this.#id = id;
   }
 
-  set __parent(parent: TabNode | undefined) {
+  set __parent(parent: TabNode<T> | undefined) {
     this.#parent = parent;
   }
 
@@ -163,47 +163,22 @@ export class TabNode {
     if (!parent) throw new Error("Root can't be checked");
     return parent.__children.findIndex((el) => el.id === this.id);
   }
-
-  toString() {
-    return `TabNode(title:${this.#title}, level:${this.#level}, id:${
-      this.#id
-    }, open:${this.#isOpen}, children:${this.#children.length})`;
-  }
 }
 
-export class Tabs {
-  #root = new TabNode("root     " + generateId(), undefined);
+type ID = string | number;
+
+export class Tabs<
+  T extends {
+    id: ID;
+    subtasks: ID[];
+  },
+> {
   #rootID = "__root__";
-  #tabs: { [key: string]: TabNode } = {};
+  #root = new TabNode<T>();
+  #tabs: { [key: string]: TabNode<T> } = {};
 
-  constructor(flatTabNodes?: TabNode[]) {
-    this.#root.__id = this.#rootID;
-    console.log(`root title: ${this.#root.title}`)
-
-    if (!flatTabNodes) return;
-    this.#checkUniqueness(flatTabNodes);
-
-    for (const node of flatTabNodes) {
-      this.#tabs[node.id] = node;
-    }
-
-    for (const node of flatTabNodes) {
-      const parent = node.__parent;
-      if (!parent) throw new Error("Parent not found");
-      if (parent.id === this.#rootID) {
-        this.#root.addChild(node);
-      }
-    }
-  }
-
-  addTab(...titles: string[]) {
-    for (const title of titles) {
-      const tab = new TabNode(title, this.#root);
-      this.#tabs[tab.id] = tab;
-      this.#root.addChild(tab);
-    }
-
-    return this;
+  constructor(data: T[]) {
+    this.#populateTabsFromData(data);
   }
 
   /**
@@ -227,7 +202,7 @@ export class Tabs {
     return this;
   }
 
-  moveInside(srcID: string, dstID: string): Tabs {
+  moveInside(srcID: string, dstID: string): Tabs<T> {
     const srcTab = this.#tabs[srcID];
     if (!srcTab.isOpen) this.moveInsideWithChildren(srcID, dstID);
     else this.moveInsideWithoutChildren(srcID, dstID);
@@ -263,7 +238,7 @@ export class Tabs {
     dstTab.addChild(srcTab);
   }
 
-  moveAfter(srcID: string, dstID: string): Tabs {
+  moveAfter(srcID: string, dstID: string): Tabs<T> {
     const srcTab = this.#tabs[srcID];
 
     if (!srcTab.isOpen) this.moveAfterWithChildren(srcID, dstID);
@@ -298,7 +273,7 @@ export class Tabs {
     dstTab.addSiblingAfter(srcTab);
   }
 
-  moveAtBeginning(srcID: string, dstID: string): Tabs {
+  moveAtBeginning(srcID: string, dstID: string): Tabs<T> {
     const srcTab = this.#tabs[srcID];
 
     if (!srcTab.isOpen) this.moveAtBeginningWithChildren(srcID, dstID);
@@ -336,8 +311,8 @@ export class Tabs {
   removeTabAndChildren(tabID: string) {
     const tab = this.#tabs[tabID];
     tab.removeItself();
-    for (const child of tab.childrenTitles) {
-      delete this.#tabs[child];
+    for (const childID of tab.childrenIDs) {
+      delete this.#tabs[childID];
     }
     delete this.#tabs[tabID];
   }
@@ -352,7 +327,7 @@ export class Tabs {
   }
 
   get flatTabNodes() {
-    const toFlat = (tab: TabNode) => {
+    const toFlat = (tab: TabNode<T>) => {
       const result = [tab];
 
       for (const child of tab.__children) {
@@ -372,8 +347,42 @@ export class Tabs {
     return [...this.#root.__children];
   }
 
-  #checkUniqueness(flatStructure: TabNode[]) {
+  #checkUniqueness(flatStructure: TabNode<T>[]) {
     const set = new Set(flatStructure);
     if (set.size !== flatStructure.length) throw new Error("Duplicate found");
   }
+
+  #populateTabsFromData(foreignData: T[]) {
+    this.#root.__id = this.#rootID;
+
+    // mapping foreign.id to tab
+    const originalTabsMap: { [key: ID]: TabNode<T> } = {};
+
+    // mapping foreignData and tabs
+    for (const data of foreignData) {
+      const tab = new TabNode<T>(data);
+      this.#tabs[tab.id] = tab;
+      if (originalTabsMap[data.id]) throw new Error("Duplicate found");
+      originalTabsMap[data.id] = tab;
+    }
+
+    // adding subtasks
+    for (const data of foreignData) {
+      const tab = originalTabsMap[data.id];
+      for (const subtask of data.subtasks) {
+        const child = originalTabsMap[subtask];
+        tab.addChild(child);
+      }
+    }
+
+    // adding to the root
+    for (const [, tab] of Object.entries(originalTabsMap)) {
+      if (!tab.__parent) {
+        this.#root.addChild(tab);
+      }
+    }
+
+    console.log(this.#root);
+  }
+
 }

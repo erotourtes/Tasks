@@ -4,15 +4,19 @@ import { ReducerType } from "@store/reducer";
 // Task
 export type TaskID = string;
 
-export type Task = {
-  id: TaskID;
+export type CustomTask = {
   title: string;
   status: string;
   description: string;
   createdAt: string;
   subtasks: TaskID[];
   tags: string[];
-};
+  removed: boolean;
+}
+
+export type Task = {
+  id: TaskID;
+} & CustomTask;
 
 
 // Store
@@ -27,7 +31,7 @@ export type MoveType = "inside" | "after" | "firstChild";
 
 export type TabDragItem = {
   id: string;
-  tab: TabNode;
+  tab: TabNode<TaskID>;
 };
 
 // Api
@@ -38,4 +42,6 @@ export type ApiPayload = {
   onStart?: string;
   onSuccess: string;
   onError?: string;
+  isInstant?: boolean;
+  resetState?: () => void;
 };

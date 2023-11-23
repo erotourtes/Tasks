@@ -7,8 +7,9 @@ export const dummyTasks: Task[] = [
     status: "todo",
     description: "Description 1",
     createdAt: "2021-08-01",
-    subtasks: ["2", "3"],
+    subtasks: ["2"],
     tags: [],
+    removed: false,
   },
   {
     id: "2",
@@ -18,6 +19,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-02",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "3",
@@ -27,6 +29,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-01",
     subtasks: ["4", "5", "6", "7", "8", "9", "10"],
     tags: [],
+    removed: false,
   },
   {
     id: "4",
@@ -36,6 +39,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-02",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "5",
@@ -45,6 +49,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-01",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "6",
@@ -54,6 +59,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-02",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "7",
@@ -63,6 +69,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-01",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "8",
@@ -72,6 +79,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-02",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "9",
@@ -81,6 +89,7 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-01",
     subtasks: [],
     tags: [],
+    removed: false,
   },
   {
     id: "10",
@@ -90,5 +99,6 @@ export const dummyTasks: Task[] = [
     createdAt: "2021-08-02",
     subtasks: [],
     tags: [],
+    removed: false,
   },
 ];

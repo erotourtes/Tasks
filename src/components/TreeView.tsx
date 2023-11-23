@@ -1,44 +1,68 @@
-import { useState } from "react";
-import { MoveType } from "../utils/types.ts";
+import { MoveType, StoreState, Task } from "../utils/types.ts";
 import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
 import { TabNode } from "../utils/TabsMethods.ts";
+import { useDispatch, useSelector } from "react-redux";
+import * as actions from "@/store/taskSlice.ts";
+import { produce } from "immer";
+import { createBlankTask } from "@/utils/utils.ts";
 
 function TreeView() {
   const treeViewWidth = 300;
-  const [tabs, setTabs] = useState<TabNode[]>([]);
-  const str = new Tabs(tabs);
 
-  const removeTab = (id: string) => setTabs([...str.remove(id).flatTabNodes]);
-  const toggleOpen = (id: string) => setTabs(str.toggleOpen(id).flatTabNodes);
+  const dispatch = useDispatch();
+  const tasks = useSelector<StoreState, Task[]>(
+    (state) => state.entities.task.tasks,
+  );
+  const str = new Tabs(tasks);
 
-  const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
-    // WTF: why does moveTab use old str instance?
-    setTabs((prev) => {
-      const str = new Tabs(prev);
-      const actions: {
-        [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
-      } = {
-        inside: str.moveInside.bind(str),
-        after: str.moveAfter.bind(str),
-        firstChild: str.moveAtBeginning.bind(str),
-      };
-
-      return actions[type](srcIndex, dstIndex).flatTabNodes;
+  const markAsDone = (task: Task) => {
+    const newTask = produce(task, (draft) => {
+      draft.status = "Completed";
     });
+    dispatch(actions.updateTask(newTask, true, () => {
+      dispatch(actions.updateTaskWithoutApi(task))
+    }));
   };
 
-  const renderTabs = (tabs?: TabNode[]) => {
+  // const toggleOpen = (id: TaskID) => setTabs(str.toggleOpen(id).flatTabNodes);
+  const toggleOpen = (task: Task) => console.log("toggleOpen", task);
+
+  const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
+    console.log("moveTab", srcIndex, dstIndex, type);
+    // WTF: why does moveTab use old str instance?
+    // setTabs((prev) => {
+    //   const str = new Tabs(prev);
+    //   const actions: {
+    //     [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
+    //   } = {
+    //     inside: str.moveInside.bind(str),
+    //     after: str.moveAfter.bind(str),
+    //     firstChild: str.moveAtBeginning.bind(str),
+    //   };
+    //
+    //   return actions[type](srcIndex, dstIndex).flatTabNodes;
+    // });
+    console.log("moveTab", srcIndex, dstIndex, type);
+  };
+
+  const craeteTask = () => {
+    const newTask = createBlankTask();
+    dispatch(actions.addTask(newTask));
+  }
+
+  const renderTabs = (tabs?: TabNode<Task>[]) => {
     return tabs?.map((tab) => {
+      const task = tab.getForeign();
       return (
         <TreeTab
           key={tab.id}
           tab={tab}
-          destroyTab={() => removeTab(tab.id)}
-          toggleOpen={() => toggleOpen(tab.id)}
+          destroyTab={() => markAsDone(task)}
+          toggleOpen={() => toggleOpen(task)}
           moveTab={(srcID, type) => moveTab(srcID, tab.id, type)}
         >
-          {renderTabs(tab.__children)}
+          {(tab.isOpen || !tab.hasChildren) && renderTabs(tab.__children)}
         </TreeTab>
       );
     });
@@ -54,11 +78,9 @@ function TreeView() {
 
         <button
           className="dark:hover:bg-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300"
-          onClick={() =>
-            setTabs(str.addTab(`Tab ${tabs.length + 1}`).flatTabNodes)
-          }
+          onClick={craeteTask}
         >
-          Add Tab
+          Add Task
         </button>
       </div>
     </>

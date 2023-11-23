@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { Task } from "@types";
+import { CustomTask, Task } from "@types";
 import { apiStart } from "./apiActions";
 
 const taskSlice = createSlice({
@@ -50,23 +50,31 @@ export const getTasks = () =>
     onStart: taskActions.requestedTasks.type,
     onSuccess: taskActions.gotTasks.type,
   });
-export const addTask = (task: Task) =>
+export const addTask = (task: CustomTask, isInstant = false, resetState?: () => void) =>
   apiStart({
     url,
     method: "POST",
     data: task,
     onSuccess: taskActions.addedTask.type,
+    isInstant,
+    resetState,
   });
-export const updateTask = (task: Task) =>
-  apiStart({
+export const updateTask = (task: Task, isInstant = false, resetState?: () => void) => {
+  return apiStart({
     url: `${url}/${task.id}`,
     method: "PUT",
     data: task,
     onSuccess: taskActions.updatedTask.type,
+    isInstant,
+    resetState,
   });
+}
 export const deleteTask = (id: string) =>
   apiStart({
     url: `${url}/${id}`,
     method: "DELETE",
     onSuccess: taskActions.deletedTask.type,
   });
+
+export const updateTaskWithoutApi = (task: Task) => taskActions.updatedTask(task);
+export const deleteTaskWithoutApi = (id: string) => taskActions.deletedTask(id);
