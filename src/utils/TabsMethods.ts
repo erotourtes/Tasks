@@ -1,5 +1,6 @@
 import { produce } from "immer";
 import { generateId } from "./utils";
+import { IsOpenable, MoveType } from "./types";
 
 export class TabNode<T> {
   #level: number;
@@ -205,7 +206,7 @@ export class Tabs<
     return this;
   }
 
-  moveInside(srcID: string, dstID: string): Tabs<T> {
+  moveInside(srcID: string, dstID: string): this {
     const srcTab = this.#tabs[srcID];
     if (!srcTab.isOpen) this.moveInsideWithChildren(srcID, dstID);
     else this.moveInsideWithoutChildren(srcID, dstID);
@@ -241,7 +242,7 @@ export class Tabs<
     dstTab.addChild(srcTab);
   }
 
-  moveAfter(srcID: string, dstID: string): Tabs<T> {
+  moveAfter(srcID: string, dstID: string): this {
     const srcTab = this.#tabs[srcID];
 
     if (!srcTab.isOpen) this.moveAfterWithChildren(srcID, dstID);
@@ -276,7 +277,7 @@ export class Tabs<
     dstTab.addSiblingAfter(srcTab);
   }
 
-  moveAtBeginning(srcID: string, dstID: string): Tabs<T> {
+  moveAtBeginning(srcID: string, dstID: string): this {
     const srcTab = this.#tabs[srcID];
 
     if (!srcTab.isOpen) this.moveAtBeginningWithChildren(srcID, dstID);
@@ -374,6 +375,18 @@ export class Tabs<
     syncForeignForTab(this.#root);
 
     return syncedData;
+  }
+
+  moveForeign(srcID: string, dstID: string, moveType: MoveType): this {
+    const moveActions: {
+      [key in MoveType]: (srcIndex: string, dstIndex: string) => this;
+    } = {
+      inside: this.moveInside.bind(this),
+      after: this.moveAfter.bind(this),
+      firstChild: this.moveAtBeginning.bind(this),
+    };
+
+    return moveActions[moveType](srcID, dstID);
   }
 
   #populateTabsFromData(foreignData: T[], infoMap: InfoMap) {

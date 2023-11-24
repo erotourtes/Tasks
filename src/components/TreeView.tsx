@@ -1,4 +1,4 @@
-import { MoveType, StoreState, Task,TaskUIState } from "../utils/types.ts";
+import { MoveType, StoreState, Task, TaskUIState } from "../utils/types.ts";
 import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
 import { TabNode } from "../utils/TabsMethods.ts";
@@ -26,22 +26,14 @@ function TreeView() {
   const craeteTask = () =>
     actions.addTaskInstantly(dispatch, createBlankTask());
 
- const toggleOpen = (task: Task) => {
+  const toggleOpen = (task: Task) => {
     const taskUI = uiTasks[task.id];
     const isOppened = taskUI?.isOpened;
-    dispatch(uiActions.setOppened({ taskID: task.id, isOpened: !isOppened  }));
+    dispatch(uiActions.setOppened({ taskID: task.id, isOpened: !isOppened }));
   };
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
-    const moveActions: {
-      [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs<Task>;
-    } = {
-      inside: str.moveInside.bind(str),
-      after: str.moveAfter.bind(str),
-      firstChild: str.moveAtBeginning.bind(str),
-    };
-
-    const synced = moveActions[type](srcIndex, dstIndex).syncForeignData();
+    const synced = str.moveForeign(srcIndex, dstIndex, type).syncForeignData();
 
     dispatch(actions.setTasks(synced));
   };
