@@ -1,19 +1,24 @@
-import { MoveType, StoreState, Task } from "../utils/types.ts";
+import { MoveType, StoreState, Task,TaskUIState } from "../utils/types.ts";
 import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
 import { TabNode } from "../utils/TabsMethods.ts";
 import { useDispatch, useSelector } from "react-redux";
 import * as actions from "@/store/taskSlice.ts";
+import * as uiActions from "@/store/taskUISlice.ts";
 import { createBlankTask } from "@/utils/utils.ts";
 
 function TreeView() {
   const treeViewWidth = 300;
 
   const dispatch = useDispatch();
+  const uiTasks = useSelector<StoreState, TaskUIState>(
+    (state) => state.ui.taskUI.taskUIInfo,
+  );
   const tasks = useSelector<StoreState, Task[]>(
     (state) => state.entities.task.tasks,
   );
-  const str = new Tabs(tasks);
+
+  const str = new Tabs(tasks, uiTasks);
 
   const markAsDone = (task: Task) =>
     actions.markTaskAsDoneInstantly(dispatch, task);
@@ -22,8 +27,9 @@ function TreeView() {
     actions.addTaskInstantly(dispatch, createBlankTask());
 
  const toggleOpen = (task: Task) => {
-    console.log("toggleOpen", task);
-    // dispatch(actions.toggleOpen(task));
+    const taskUI = uiTasks[task.id];
+    const isOppened = taskUI?.isOpened;
+    dispatch(uiActions.setOppened({ taskID: task.id, isOpened: !isOppened  }));
   };
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {

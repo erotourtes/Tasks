@@ -15,9 +15,25 @@ export type CustomTask = {
   removed: boolean;
 };
 
-export type Task = {
+type ServerTask = {
   id: TaskID;
 } & CustomTask;
+
+export type Task = ServerTask;
+
+export interface IsOpenable {
+  isOpened: boolean;
+}
+
+export type TaskUIInfo = {
+  isSynced: boolean;
+  isSyncing: boolean;
+  error: string;
+} & IsOpenable;
+
+export type TaskUIState = {
+  [taskID: TaskID]: TaskUIInfo;
+};
 
 // Store
 export type StoreState = ReducerType;

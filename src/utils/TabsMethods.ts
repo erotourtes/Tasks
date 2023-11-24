@@ -167,6 +167,7 @@ export class TabNode<T> {
 }
 
 type ID = string | number;
+type InfoMap = { [key: ID]: IsOpenable };
 
 export class Tabs<
   T extends {
@@ -178,8 +179,9 @@ export class Tabs<
   #root = new TabNode<T>();
   #tabs: { [key: string]: TabNode<T> } = {};
 
-  constructor(data: T[]) {
-    this.#populateTabsFromData(data);
+  //type of isOpenedMap is { [key: ID of T]: boolean }
+  constructor(data: T[], infoMap: InfoMap = {}) {
+    this.#populateTabsFromData(data, infoMap);
   }
 
   /**
@@ -374,7 +376,7 @@ export class Tabs<
     return syncedData;
   }
 
-  #populateTabsFromData(foreignData: T[]) {
+  #populateTabsFromData(foreignData: T[], infoMap: InfoMap) {
     this.#root.__id = this.#rootID;
 
     // mapping foreign.id to tab
@@ -382,7 +384,8 @@ export class Tabs<
 
     // mapping foreignData and tabs
     for (const data of foreignData) {
-      const tab = new TabNode<T>(data);
+      const info = infoMap[data.id] ?? false;
+      const tab = new TabNode<T>(data, undefined, info.isOpened);
       this.#tabs[tab.id] = tab;
       if (originalTabsMap[data.id]) throw new Error("Duplicate found");
       originalTabsMap[data.id] = tab;
