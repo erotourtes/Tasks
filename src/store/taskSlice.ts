@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { produce } from "immer";
 
-import { CustomTask, Task } from "@types";
+import { CustomTask, StoreDispatch, Task } from "@types";
 import { apiStart } from "./apiActions";
 
 const taskSlice = createSlice({
@@ -17,6 +18,10 @@ const taskSlice = createSlice({
     },
     gotTasks: (state, { payload: tasks }: PayloadAction<Task[]>) => {
       state.loading = false;
+      state.tasks = tasks;
+    },
+    setTasks: (state, { payload: tasks }: PayloadAction<Task[]>) => {
+      console.log("setTasks", tasks);
       state.tasks = tasks;
     },
     addedTask: (state, { payload: task }: PayloadAction<Task>) => {
@@ -40,6 +45,7 @@ export default taskSlice;
 // Action Creators
 const taskActions = taskSlice.actions;
 
+// Thunks (send request to server; then update the state)
 // TODO: remove url
 const url = "/tasks";
 
@@ -50,25 +56,37 @@ export const getTasks = () =>
     onStart: taskActions.requestedTasks.type,
     onSuccess: taskActions.gotTasks.type,
   });
-export const addTask = (task: CustomTask, isInstant = false, resetState?: () => void) =>
+export const addTask = (
+  task: CustomTask,
+  isInstant = false,
+  onErrorInstant?: () => void,
+  onSuccessInstant?: (t: Task) => void,
+) =>
   apiStart({
     url,
     method: "POST",
     data: task,
     onSuccess: taskActions.addedTask.type,
     isInstant,
-    resetState,
+    onErrorInstant,
+    onSuccessInstant,
   });
-export const updateTask = (task: Task, isInstant = false, resetState?: () => void) => {
+export const updateTask = (
+  task: Task,
+  isInstant = false,
+  onErrorInstant?: () => void,
+  onSuccessInstant?: (t: Task) => void,
+) => {
   return apiStart({
     url: `${url}/${task.id}`,
     method: "PUT",
     data: task,
     onSuccess: taskActions.updatedTask.type,
     isInstant,
-    resetState,
+    onErrorInstant,
+    onSuccessInstant,
   });
-}
+};
 export const deleteTask = (id: string) =>
   apiStart({
     url: `${url}/${id}`,
@@ -76,5 +94,28 @@ export const deleteTask = (id: string) =>
     onSuccess: taskActions.deletedTask.type,
   });
 
-export const updateTaskWithoutApi = (task: Task) => taskActions.updatedTask(task);
-export const deleteTaskWithoutApi = (id: string) => taskActions.deletedTask(id);
+
+// Instant Actions (update the state instantly, then send request to server)
+
+export const markTaskAsDone = (
+  dispatch: StoreDispatch,
+  task: Task,
+  onSuccessInstant?: (t: Task) => void,
+) => {
+  const newTask = produce(task, (draft) => {
+    draft.status = "Completed";
+  });
+  dispatch(
+    updateTask(
+      newTask,
+      true,
+      () => {
+        dispatch(taskActions.updatedTask(task));
+      },
+      onSuccessInstant,
+    ),
+  );
+};
+
+// Local Actions (update the state locally)
+export const setTasks = (tasks: Task[]) => taskActions.setTasks(tasks);

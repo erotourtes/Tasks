@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import { generateId } from "./utils";
 
 export class TabNode<T> {
@@ -352,6 +353,27 @@ export class Tabs<
     if (set.size !== flatStructure.length) throw new Error("Duplicate found");
   }
 
+  syncForeignData() {
+    const syncedData: T[] = [];
+
+    const syncForeignForTab = (tab: TabNode<T>) => {
+      for (const childTab of tab.__children) {
+        const newForeignChildren = childTab.__children.map((child) =>
+          child.getForeign(),
+        );
+        const foreignCopy = produce(childTab.getForeign(), (draft) => {
+          draft.subtasks = newForeignChildren.map((child) => child.id);
+        });
+        syncedData.push(foreignCopy);
+        syncForeignForTab(childTab);
+      }
+    };
+
+    syncForeignForTab(this.#root);
+
+    return syncedData;
+  }
+
   #populateTabsFromData(foreignData: T[]) {
     this.#root.__id = this.#rootID;
 
@@ -375,14 +397,14 @@ export class Tabs<
       }
     }
 
-    // adding to the root
-    for (const [, tab] of Object.entries(originalTabsMap)) {
-      if (!tab.__parent) {
+    // adding to the root, preserving the order
+    for (const data of foreignData) {
+      const tab = originalTabsMap[data.id];
+      const parent = tab.__parent;
+
+      if (!parent) {
         this.#root.addChild(tab);
       }
     }
-
-    console.log(this.#root);
   }
-
 }

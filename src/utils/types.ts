@@ -1,5 +1,6 @@
 import { TabNode } from "./TabsMethods";
 import { ReducerType } from "@store/reducer";
+import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 
 // Task
 export type TaskID = string;
@@ -12,15 +13,16 @@ export type CustomTask = {
   subtasks: TaskID[];
   tags: string[];
   removed: boolean;
-}
+};
 
 export type Task = {
   id: TaskID;
 } & CustomTask;
 
-
 // Store
 export type StoreState = ReducerType;
+
+export type StoreDispatch = Dispatch<AnyAction>;
 
 // Drag
 export const DragTypes = {
@@ -43,5 +45,8 @@ export type ApiPayload = {
   onSuccess: string;
   onError?: string;
   isInstant?: boolean;
-  resetState?: () => void;
+  onErrorInstant?: () => void;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // TODO
+  onSuccessInstant?: (response: any) => void;
 };

@@ -4,7 +4,6 @@ import TreeTab from "./TreeTab.tsx";
 import { TabNode } from "../utils/TabsMethods.ts";
 import { useDispatch, useSelector } from "react-redux";
 import * as actions from "@/store/taskSlice.ts";
-import { produce } from "immer";
 import { createBlankTask } from "@/utils/utils.ts";
 
 function TreeView() {
@@ -16,40 +15,33 @@ function TreeView() {
   );
   const str = new Tabs(tasks);
 
-  const markAsDone = (task: Task) => {
-    const newTask = produce(task, (draft) => {
-      draft.status = "Completed";
-    });
-    dispatch(actions.updateTask(newTask, true, () => {
-      dispatch(actions.updateTaskWithoutApi(task))
-    }));
-  };
+
+  const markAsDone = (task: Task) => actions.markTaskAsDone(dispatch, task);
 
   // const toggleOpen = (id: TaskID) => setTabs(str.toggleOpen(id).flatTabNodes);
-  const toggleOpen = (task: Task) => console.log("toggleOpen", task);
+  const toggleOpen = (task: Task) => {
+    console.log("toggleOpen", task);
+    // dispatch(actions.toggleOpen(task));
+  };
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
-    console.log("moveTab", srcIndex, dstIndex, type);
-    // WTF: why does moveTab use old str instance?
-    // setTabs((prev) => {
-    //   const str = new Tabs(prev);
-    //   const actions: {
-    //     [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs;
-    //   } = {
-    //     inside: str.moveInside.bind(str),
-    //     after: str.moveAfter.bind(str),
-    //     firstChild: str.moveAtBeginning.bind(str),
-    //   };
-    //
-    //   return actions[type](srcIndex, dstIndex).flatTabNodes;
-    // });
-    console.log("moveTab", srcIndex, dstIndex, type);
+    const moveActions: {
+      [key in MoveType]: (srcIndex: string, dstIndex: string) => Tabs<Task>;
+    } = {
+      inside: str.moveInside.bind(str),
+      after: str.moveAfter.bind(str),
+      firstChild: str.moveAtBeginning.bind(str),
+    };
+
+    const synced = moveActions[type](srcIndex, dstIndex).syncForeignData()
+
+    dispatch(actions.setTasks(synced));
   };
 
   const craeteTask = () => {
     const newTask = createBlankTask();
     dispatch(actions.addTask(newTask));
-  }
+  };
 
   const renderTabs = (tabs?: TabNode<Task>[]) => {
     return tabs?.map((tab) => {

@@ -18,7 +18,8 @@ const apiMiddleware: Middleware<object, StoreState> =
       onSuccess,
       onError,
       isInstant,
-      resetState,
+      onErrorInstant,
+      onSuccessInstant,
     } = action.payload as ApiPayload;
 
     if (onStart) dispatch({ type: onStart });
@@ -43,7 +44,9 @@ const apiMiddleware: Middleware<object, StoreState> =
       if (method === "PUT" && url.search(baseURL + "/tasks") !== -1 && body)
         return { json: () => ({ success: true, body: data }) };
       if (method === "POST" && url === baseURL + "/tasks" && body)
-        return { json: () => ({ success: true, body: {...data, id: generateId()} }) };
+        return {
+          json: () => ({ success: true, body: { ...data, id: generateId() } }),
+        };
 
       throw new Error("Error fetching data");
     };
@@ -55,11 +58,14 @@ const apiMiddleware: Middleware<object, StoreState> =
         if (onError) dispatch({ type: onError, payload });
         else dispatch({ type: apiError.type, payload });
 
-        if (isInstant && resetState) resetState();
+        if (isInstant && onErrorInstant) onErrorInstant();
       });
 
     if (!json) return;
-    if (isInstant) return dispatch({ type: apiInstantSuccess.type });
+    if (isInstant) {
+      if (onSuccessInstant) onSuccessInstant(json.body);
+      return dispatch({ type: apiInstantSuccess.type });
+    }
     dispatch({ type: onSuccess, payload: json.body });
   };
 

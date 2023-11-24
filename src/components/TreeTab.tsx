@@ -35,7 +35,7 @@ function DevideLine({
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
-  }));
+  }), [moveTab]);
 
   return (
     <div
