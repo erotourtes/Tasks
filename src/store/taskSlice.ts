@@ -3,6 +3,7 @@ import { produce } from "immer";
 
 import { CustomTask, StoreDispatch, Task } from "@types";
 import { apiStart } from "./apiActions";
+import { generateId } from "@/utils/utils";
 
 const taskSlice = createSlice({
   name: "task",
@@ -26,6 +27,16 @@ const taskSlice = createSlice({
     },
     addedTask: (state, { payload: task }: PayloadAction<Task>) => {
       state.tasks.push(task);
+    },
+    updatedTaskByOldID: (
+      state,
+      {
+        payload: { task, oldID },
+      }: PayloadAction<{ task: Task; oldID: string }>,
+    ) => {
+      const index = state.tasks.findIndex((t) => t.id === oldID);
+      if (index === -1) throw new Error("Can't update task");
+      state.tasks[index] = task;
     },
     updatedTask: (state, { payload: task }: PayloadAction<Task>) => {
       const index = state.tasks.findIndex((t) => t.id === task.id);
@@ -94,10 +105,9 @@ export const deleteTask = (id: string) =>
     onSuccess: taskActions.deletedTask.type,
   });
 
-
 // Instant Actions (update the state instantly, then send request to server)
 
-export const markTaskAsDone = (
+export const markTaskAsDoneInstantly = (
   dispatch: StoreDispatch,
   task: Task,
   onSuccessInstant?: (t: Task) => void,
@@ -113,6 +123,33 @@ export const markTaskAsDone = (
         dispatch(taskActions.updatedTask(task));
       },
       onSuccessInstant,
+    ),
+  );
+};
+
+export const addTaskInstantly = (
+  dispatch: StoreDispatch,
+  task: CustomTask,
+  onSuccessInstant?: (t: Task) => void,
+  onErrorInstant?: () => void,
+) => {
+  const customTempID = `CUSTOM_ID:${generateId()}`;
+  const newTask = { ...task, id: customTempID };
+
+  dispatch(
+    addTask(
+      newTask,
+      true,
+      () => {
+        dispatch(taskActions.deletedTask(customTempID));
+        onErrorInstant && onErrorInstant();
+      },
+      (t) => {
+        dispatch(
+          taskActions.updatedTaskByOldID({ task: t, oldID: customTempID }),
+        );
+        if (onSuccessInstant) onSuccessInstant(t);
+      },
     ),
   );
 };

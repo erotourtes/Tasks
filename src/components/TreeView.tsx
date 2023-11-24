@@ -15,11 +15,13 @@ function TreeView() {
   );
   const str = new Tabs(tasks);
 
+  const markAsDone = (task: Task) =>
+    actions.markTaskAsDoneInstantly(dispatch, task);
 
-  const markAsDone = (task: Task) => actions.markTaskAsDone(dispatch, task);
+  const craeteTask = () =>
+    actions.addTaskInstantly(dispatch, createBlankTask());
 
-  // const toggleOpen = (id: TaskID) => setTabs(str.toggleOpen(id).flatTabNodes);
-  const toggleOpen = (task: Task) => {
+ const toggleOpen = (task: Task) => {
     console.log("toggleOpen", task);
     // dispatch(actions.toggleOpen(task));
   };
@@ -33,14 +35,9 @@ function TreeView() {
       firstChild: str.moveAtBeginning.bind(str),
     };
 
-    const synced = moveActions[type](srcIndex, dstIndex).syncForeignData()
+    const synced = moveActions[type](srcIndex, dstIndex).syncForeignData();
 
     dispatch(actions.setTasks(synced));
-  };
-
-  const craeteTask = () => {
-    const newTask = createBlankTask();
-    dispatch(actions.addTask(newTask));
   };
 
   const renderTabs = (tabs?: TabNode<Task>[]) => {
