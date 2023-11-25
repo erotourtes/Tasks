@@ -14,15 +14,15 @@ const apiMiddleware: Middleware<object, StoreState> =
       url,
       method,
       data,
-      onStart,
-      onSuccess,
-      onError,
+      onStart = [],
+      onSuccess = [],
+      onError = [],
       isInstant,
       onErrorInstant,
       onSuccessInstant,
     } = action.payload as ApiPayload;
 
-    if (onStart) dispatch({ type: onStart });
+    onStart.forEach((type) => dispatch({ type }));
     if (isInstant) dispatch({ type: onSuccess, payload: data });
 
     next(action);
@@ -55,7 +55,8 @@ const apiMiddleware: Middleware<object, StoreState> =
       .then((data) => data.json())
       .catch((err) => {
         const payload = { err: err.message };
-        if (onError) dispatch({ type: onError, payload });
+        if (onError.length > 0)
+          onError.forEach((type) => dispatch({ type, payload }));
         else dispatch({ type: apiError.type, payload });
 
         if (isInstant && onErrorInstant) onErrorInstant();
@@ -66,7 +67,7 @@ const apiMiddleware: Middleware<object, StoreState> =
       if (onSuccessInstant) onSuccessInstant(json.body);
       return dispatch({ type: apiInstantSuccess.type });
     }
-    dispatch({ type: onSuccess, payload: json.body });
+    onSuccess.forEach((type) => dispatch({ type, payload: json.body }));
   };
 
 export default apiMiddleware;

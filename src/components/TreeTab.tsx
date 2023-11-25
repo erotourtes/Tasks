@@ -1,6 +1,12 @@
 import { useDrag, useDrop } from "react-dnd";
 import { CloseIcon, ArrowIcon } from "../assets/icons";
-import { DragTypes, MoveType, TabDragItem, Task } from "../utils/types.ts";
+import {
+  DragTypes,
+  MoveType,
+  TabDragItem,
+  Task,
+  TaskUIInfo,
+} from "../utils/types.ts";
 import { TabNode } from "../utils/TabsMethods.ts";
 
 interface TreeTabProps {
@@ -9,6 +15,7 @@ interface TreeTabProps {
   toggleOpen: () => void;
   moveTab: (to: string, type: MoveType) => void;
   children?: React.ReactNode;
+  uiInfo?: TaskUIInfo;
 }
 
 const howeverText = `
@@ -17,7 +24,6 @@ const howeverText = `
 `;
 
 function DevideLine({
-  // tab,
   moveTab,
   moveType = "after",
 }: {
@@ -25,17 +31,20 @@ function DevideLine({
   moveTab: (to: string, type: MoveType) => void;
   moveType?: MoveType;
 }) {
-  const [{ isOver }, dropRef] = useDrop(() => ({
-    accept: DragTypes.TAB,
-    drop: (item: TabDragItem) => {
-      // tab - that is dropped on
-      // item - that is dragged
-      moveTab(item.id, moveType);
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+  const [{ isOver }, dropRef] = useDrop(
+    () => ({
+      accept: DragTypes.TAB,
+      drop: (item: TabDragItem) => {
+        // tab - that is dropped on
+        // item - that is dragged
+        moveTab(item.id, moveType);
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
     }),
-  }), [moveTab]);
+    [moveTab],
+  );
 
   return (
     <div
@@ -47,12 +56,19 @@ function DevideLine({
   );
 }
 
+const Spinner = () => {
+  return (
+    <div className="animate-spin rounded-full w-3 h-3 border-t-2 border-zinc-500 border-t-zinc-700 dark:border-zinc-200"></div>
+  );
+};
+
 function TreeTab({
   children,
   tab,
   destroyTab,
   toggleOpen,
   moveTab,
+  uiInfo,
 }: TreeTabProps) {
   const { level, isOpen } = tab.state;
   const task = tab.getForeign();
@@ -86,7 +102,9 @@ function TreeTab({
 
   return (
     <>
-      {tab.isFirst() && <DevideLine tab={tab} moveTab={moveTab} moveType={"firstChild"} />}
+      {tab.isFirst() && (
+        <DevideLine tab={tab} moveTab={moveTab} moveType={"firstChild"} />
+      )}
 
       <div
         ref={(node) => dragRef(dropRef(node))}
@@ -100,6 +118,7 @@ function TreeTab({
                 ? "dark:border-zinc-200 border-zinc-800"
                 : "border-transparent"
             }
+            ${uiInfo?.status === "loading" && "animate-pulse"}
 `}
         >
           <span
@@ -108,8 +127,17 @@ function TreeTab({
           >
             {tab.hasChildren && <ArrowIcon className="w-4 h-4" />}
           </span>
+          <div className="pr-2">
+            {uiInfo?.status === "loading" && <Spinner />}
+            {uiInfo?.status === "failed" && (
+              <span className="text-red-500">!</span>
+            )}
+          </div>
           <p className="text-sm font-bold line-clamp-1">
-            {`${task.title} ${level} ${tab.id.slice(0, 2)} ${tab.__parent?.id.slice(0, 2)}`}
+            {`${task.title} ${level} ${tab.id.slice(
+              0,
+              2,
+            )} ${tab.__parent?.id.slice(0, 2)}`}
           </p>
 
           <div

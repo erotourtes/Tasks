@@ -17,6 +17,9 @@ function TreeView() {
   const tasks = useSelector<StoreState, Task[]>(
     (state) => state.entities.task.tasks,
   );
+  const loading = useSelector<StoreState, boolean>(
+    (state) => state.entities.task.loading,
+  );
 
   const str = new Tabs(tasks, uiTasks);
 
@@ -48,6 +51,7 @@ function TreeView() {
           destroyTab={() => markAsDone(task)}
           toggleOpen={() => toggleOpen(task)}
           moveTab={(srcID, type) => moveTab(srcID, tab.id, type)}
+          uiInfo={uiTasks[task.id]}
         >
           {(tab.isOpen || !tab.hasChildren) && renderTabs(tab.__children)}
         </TreeTab>
@@ -64,7 +68,10 @@ function TreeView() {
         {renderTabs(str.flatRoot)}
 
         <button
-          className="dark:hover:bg-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300"
+          className={`dark:hover:bg-zinc-700 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300 ${
+            loading ? "dark:text-orange-300 text-orange-700" : "dark:text-zinc-200"
+          }`}
+          disabled={loading}
           onClick={craeteTask}
         >
           Add Task

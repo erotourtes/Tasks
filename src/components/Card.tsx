@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { updateTask } from "@/store/taskSlice";
+import { updateTaskInstantly } from "@/store/taskSlice";
 import { produce } from "immer";
 import { changeOnEvent } from "@/utils/utils";
 import { Task } from "@/utils/types";
@@ -33,7 +33,7 @@ export default function Card({ task, subtasks }: CardProps) {
       draft.description = description;
     });
 
-    dispatch(updateTask(newTask));
+    updateTaskInstantly(dispatch, newTask)
     setIsEditing(false);
   };
 

@@ -1,5 +1,31 @@
-import { TaskID, TaskUIState } from "@/utils/types";
+import {
+  ApiStatus,
+  Task,
+  TaskID,
+  TaskUIInfo,
+  TaskUIState,
+} from "@/utils/types";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+
+const defaultTaskUIInfo: () => TaskUIInfo = () => ({
+  isOpened: false,
+  status: "idle",
+});
+
+const setStatusForTasks = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+  {
+    payload: { tasks, type },
+  }: PayloadAction<{ tasks: Task[]; type: ApiStatus }>,
+) => {
+  const taskIDs = tasks.map((t) => t.id);
+  for (const taskID of taskIDs) {
+    const taskInfo = state.taskUIInfo[taskID];
+    if (!taskInfo) state.taskUIInfo[taskID] = defaultTaskUIInfo();
+    state.taskUIInfo[taskID].status = type;
+  }
+};
 
 const taskUISlice = createSlice({
   name: "taskUI",
@@ -7,10 +33,6 @@ const taskUISlice = createSlice({
     taskUIInfo: {} as TaskUIState,
   },
   reducers: {
-    // setSynced: (state, { payload: { taskID, synced } }: PayloadAction<TaskID, Vjjj) => {
-    //   const taskInfo = state.taskUIInfo[taskID]
-    //   taskInfo.isSynced
-    // },
     setOppened: (
       state,
       {
@@ -18,8 +40,28 @@ const taskUISlice = createSlice({
       }: PayloadAction<{ taskID: TaskID; isOpened: boolean }>,
     ) => {
       const taskInfo = state.taskUIInfo[taskID];
-      if (!taskInfo) state.taskUIInfo[taskID] = { isOpened, isSynced: true, isSyncing: false, error: "" };
+      if (!taskInfo) state.taskUIInfo[taskID] = defaultTaskUIInfo();
       state.taskUIInfo[taskID].isOpened = isOpened;
+    },
+    setStatus: (
+      state,
+      {
+        payload: { taskID, status },
+      }: PayloadAction<{ taskID: TaskID; status: ApiStatus }>,
+    ) => {
+      const taskInfo = state.taskUIInfo[taskID];
+      if (!taskInfo) state.taskUIInfo[taskID] = defaultTaskUIInfo();
+      state.taskUIInfo[taskID].status = status;
+    },
+    setTasksStatusSuccess: (
+      state,
+      { payload: tasks, type }: PayloadAction<Task[]>,
+    ) => {
+      const payload: PayloadAction<{ tasks: Task[]; type: ApiStatus }> = {
+        payload: { tasks, type: "succeeded" },
+        type,
+      };
+      setStatusForTasks(state, payload);
     },
   },
 });
@@ -27,4 +69,4 @@ const taskUISlice = createSlice({
 export default taskUISlice;
 
 const taskUIActions = taskUISlice.actions;
-export const { setOppened } = taskUIActions;
+export const { setOppened, setStatus, setTasksStatusSuccess } = taskUIActions;

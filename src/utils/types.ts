@@ -25,10 +25,10 @@ export interface IsOpenable {
   isOpened: boolean;
 }
 
+export type ApiStatus = "idle" | "loading" | "succeeded" | "failed";
+
 export type TaskUIInfo = {
-  isSynced: boolean;
-  isSyncing: boolean;
-  error: string;
+  status: ApiStatus;
 } & IsOpenable;
 
 export type TaskUIState = {
@@ -57,9 +57,9 @@ export type ApiPayload = {
   url: string;
   method: string;
   data?: object;
-  onStart?: string;
-  onSuccess: string;
-  onError?: string;
+  onStart?: string[];
+  onSuccess: string[];
+  onError?: string[];
   isInstant?: boolean;
   onErrorInstant?: () => void;
   /* eslint-disable @typescript-eslint/no-explicit-any */
