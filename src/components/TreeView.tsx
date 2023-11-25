@@ -23,8 +23,11 @@ function TreeView() {
 
   const str = new Tabs(tasks, uiTasks);
 
-  const markAsDone = (task: Task) =>
-    actions.markTaskAsDoneInstantly(dispatch, task);
+  const markAsDone = (task: Task) => {
+    const isLocked = uiTasks[task.id]?.isLocked;
+    if (isLocked) actions.markTaskAsDoneRecInstantly(dispatch, task, tasks);
+    else actions.markTaskAsDoneInstantly(dispatch, task);
+  };
 
   const craeteTask = () =>
     actions.addTaskInstantly(dispatch, createBlankTask());
@@ -39,7 +42,7 @@ function TreeView() {
     const taskUI = uiTasks[task.id];
     const isLocked = taskUI?.isLocked;
     dispatch(uiActions.setLocked({ taskID: task.id, isLocked: !isLocked }));
-  }
+  };
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
     const synced = str.moveForeign(srcIndex, dstIndex, type).syncForeignData();
@@ -76,7 +79,9 @@ function TreeView() {
 
         <button
           className={`dark:hover:bg-zinc-700 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300 ${
-            loading ? "dark:text-orange-300 text-orange-700" : "dark:text-zinc-200"
+            loading
+              ? "dark:text-orange-300 text-orange-700"
+              : "dark:text-zinc-200"
           }`}
           disabled={loading}
           onClick={craeteTask}

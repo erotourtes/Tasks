@@ -117,7 +117,7 @@ export const markTaskAsDoneInstantly = (
   onSuccessInstant?: (t: Task) => void,
 ) => {
   const newTask = produce(task, (draft) => {
-    draft.status = "Completed";
+    draft.status = "done";
   });
   dispatch(uiActions.setStatus({ taskID: task.id, status: "loading" }));
   dispatch(
@@ -134,6 +134,19 @@ export const markTaskAsDoneInstantly = (
       },
     ),
   );
+};
+
+// TODO: make more efficient (now rerenders on all subtasks)
+export const markTaskAsDoneRecInstantly = (
+  dispatch: StoreDispatch,
+  task: Task,
+  tasks: Task[],
+  onSuccessInstant?: (t: Task) => void,
+) => {
+  const subtasks = tasks.filter((t) => task.subtasks.includes(t.id));
+  markTaskAsDoneInstantly(dispatch, task, onSuccessInstant);
+  for (const subtask of subtasks)
+    markTaskAsDoneRecInstantly(dispatch, subtask, tasks);
 };
 
 export const addTaskInstantly = (
@@ -191,7 +204,7 @@ export const updateTaskInstantly = (
       },
     ),
   );
-}
+};
 
 // Local Actions (update the state locally)
 export const setTasks = (tasks: Task[]) => taskActions.setTasks(tasks);

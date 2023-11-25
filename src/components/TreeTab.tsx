@@ -121,6 +121,7 @@ function TreeTab({
                 : "border-transparent"
             }
             ${uiInfo?.status === "loading" && "animate-pulse"}
+            ${task.status === "done" && "opacity-50 line-through"}
 `}
         >
           <span

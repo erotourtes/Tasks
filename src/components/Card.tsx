@@ -47,7 +47,7 @@ export default function Card({ task, subtasks }: CardProps) {
     <div
       style={{ height: cardHeight, maxHeight: cardHeight }}
       className={`dark:bg-zinc-800 dark:text-zinc-200 w-fit rounded-lg ${
-        task.status === "Completed" ? "opacity-50" : ""
+        task.status === "done" ? "opacity-50" : ""
       } shadow-lg flex flex-col relative`}
     >
       <div className="flex justify-between flex-col p-2">

@@ -5,9 +5,11 @@ import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 // Task
 export type TaskID = string;
 
+export type TaskStatus = "todo" | "inProgress" | "done";
+
 export type CustomTask = {
   title: string;
-  status: string;
+  status: TaskStatus;
   description: string;
   createdAt: string;
   subtasks: TaskID[];
