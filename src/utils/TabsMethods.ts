@@ -429,4 +429,8 @@ export class Tabs<
       }
     }
   }
+
+  getForeign(tabID: string) {
+    return this.#tabs[tabID].getForeign();
+  }
 }

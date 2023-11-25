@@ -1,4 +1,4 @@
-import { MoveType, StoreState, Task, TaskUIState } from "../utils/types.ts";
+import { MoveType, StoreState, Task, TaskID, TaskUIState } from "../utils/types.ts";
 import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
 import { TabNode } from "../utils/TabsMethods.ts";
@@ -23,7 +23,10 @@ function TreeView() {
 
   const str = new Tabs(tasks, uiTasks);
 
+  const notFromServer = (taskID: TaskID) => taskID.startsWith("CUSTOM_ID");
+
   const markAsDone = (task: Task) => {
+    if (notFromServer(task.id)) return;
     const isLocked = uiTasks[task.id]?.isLocked;
     if (isLocked) actions.markTaskAsDoneRecInstantly(dispatch, task, tasks);
     else actions.markTaskAsDoneInstantly(dispatch, task);
@@ -33,18 +36,23 @@ function TreeView() {
     actions.addTaskInstantly(dispatch, createBlankTask());
 
   const toggleOpen = (task: Task) => {
+    if (notFromServer(task.id)) return;
     const taskUI = uiTasks[task.id];
     const isOppened = taskUI?.isOpened;
     dispatch(uiActions.setOppened({ taskID: task.id, isOpened: !isOppened }));
   };
 
   const toggleLock = (task: Task) => {
+    if (notFromServer(task.id)) return;
     const taskUI = uiTasks[task.id];
     const isLocked = taskUI?.isLocked;
     dispatch(uiActions.setLocked({ taskID: task.id, isLocked: !isLocked }));
   };
 
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
+    const f1 = str.getForeign(srcIndex);
+    const f2 = str.getForeign(dstIndex);
+    if (notFromServer(f1.id) || notFromServer(f2.id)) return;
     const synced = str.moveForeign(srcIndex, dstIndex, type).syncForeignData();
 
     dispatch(actions.setTasks(synced));
