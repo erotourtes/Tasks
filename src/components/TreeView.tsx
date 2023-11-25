@@ -35,6 +35,12 @@ function TreeView() {
     dispatch(uiActions.setOppened({ taskID: task.id, isOpened: !isOppened }));
   };
 
+  const toggleLock = (task: Task) => {
+    const taskUI = uiTasks[task.id];
+    const isLocked = taskUI?.isLocked;
+    dispatch(uiActions.setLocked({ taskID: task.id, isLocked: !isLocked }));
+  }
+
   const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
     const synced = str.moveForeign(srcIndex, dstIndex, type).syncForeignData();
 
@@ -50,6 +56,7 @@ function TreeView() {
           tab={tab}
           destroyTab={() => markAsDone(task)}
           toggleOpen={() => toggleOpen(task)}
+          toggleLock={() => toggleLock(task)}
           moveTab={(srcID, type) => moveTab(srcID, tab.id, type)}
           uiInfo={uiTasks[task.id]}
         >

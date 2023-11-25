@@ -1,11 +1,12 @@
 import { produce } from "immer";
 import { generateId } from "./utils";
-import { IsOpenable, MoveType } from "./types";
+import { IsOpenable, Lockable, MoveType } from "./types";
 
 export class TabNode<T> {
   #level: number;
   #id: string = generateId();
   #isOpen: boolean = true;
+  #isLocked: boolean = false;
   #children: TabNode<T>[] = [];
   #parent?: TabNode<T>;
   #foreign?: T;
@@ -15,11 +16,12 @@ export class TabNode<T> {
     return this.#foreign;
   }
 
-  constructor(foreign?: T, parent?: TabNode<T>, isOpen = false) {
+  constructor(foreign?: T, parent?: TabNode<T>, isOpen = false, isLocked = false) {
     this.#foreign = foreign;
     this.#level = parent ? parent.#level + 1 : -1;
     this.#parent = parent;
     this.#isOpen = isOpen;
+    this.#isLocked = isLocked;
   }
 
   set __level(level: number) {
@@ -154,6 +156,10 @@ export class TabNode<T> {
     this.#isOpen = isOpen;
   }
 
+  get isLocked() {
+    return this.#isLocked;
+  }
+
   isFirst() {
     const parent = this.#parent;
     if (!parent) throw new Error("Root can't be checked");
@@ -168,7 +174,7 @@ export class TabNode<T> {
 }
 
 type ID = string | number;
-type InfoMap = { [key: ID]: IsOpenable };
+type InfoMap = { [key: ID]: IsOpenable & Lockable };
 
 export class Tabs<
   T extends {
@@ -208,7 +214,7 @@ export class Tabs<
 
   moveInside(srcID: string, dstID: string): this {
     const srcTab = this.#tabs[srcID];
-    if (!srcTab.isOpen) this.moveInsideWithChildren(srcID, dstID);
+    if (!srcTab.isOpen || srcTab.isLocked) this.moveInsideWithChildren(srcID, dstID);
     else this.moveInsideWithoutChildren(srcID, dstID);
 
     return this;
@@ -245,7 +251,7 @@ export class Tabs<
   moveAfter(srcID: string, dstID: string): this {
     const srcTab = this.#tabs[srcID];
 
-    if (!srcTab.isOpen) this.moveAfterWithChildren(srcID, dstID);
+    if (!srcTab.isOpen || srcTab.isLocked) this.moveAfterWithChildren(srcID, dstID);
     else this.moveAfterWithoutChildren(srcID, dstID);
 
     return this;
@@ -280,7 +286,7 @@ export class Tabs<
   moveAtBeginning(srcID: string, dstID: string): this {
     const srcTab = this.#tabs[srcID];
 
-    if (!srcTab.isOpen) this.moveAtBeginningWithChildren(srcID, dstID);
+    if (!srcTab.isOpen || srcTab.isLocked) this.moveAtBeginningWithChildren(srcID, dstID);
     else this.moveAtBeginningWithoutChildren(srcID, dstID);
 
     return this;
@@ -398,7 +404,7 @@ export class Tabs<
     // mapping foreignData and tabs
     for (const data of foreignData) {
       const info = infoMap[data.id] ?? false;
-      const tab = new TabNode<T>(data, undefined, info.isOpened);
+      const tab = new TabNode<T>(data, undefined, info.isOpened, info.isLocked);
       this.#tabs[tab.id] = tab;
       if (originalTabsMap[data.id]) throw new Error("Duplicate found");
       originalTabsMap[data.id] = tab;

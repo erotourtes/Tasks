@@ -1,5 +1,5 @@
 import { useDrag, useDrop } from "react-dnd";
-import { CloseIcon, ArrowIcon } from "../assets/icons";
+import LinkIcon, { CloseIcon, ArrowIcon } from "../assets/icons";
 import {
   DragTypes,
   MoveType,
@@ -12,6 +12,7 @@ import { TabNode } from "../utils/TabsMethods.ts";
 interface TreeTabProps {
   tab: TabNode<Task>;
   destroyTab: () => void;
+  toggleLock: () => void;
   toggleOpen: () => void;
   moveTab: (to: string, type: MoveType) => void;
   children?: React.ReactNode;
@@ -66,6 +67,7 @@ function TreeTab({
   children,
   tab,
   destroyTab,
+  toggleLock,
   toggleOpen,
   moveTab,
   uiInfo,
@@ -142,9 +144,18 @@ function TreeTab({
 
           <div
             className={`text-sm font-bold cursor-pointer flex items-center absolute right-2 top-1/2 transform -translate-y-1/2 ${howeverText}`}
-            onClick={destroyTab}
           >
-            <CloseIcon className="w-4 h-4 text-inherit" />
+            {task.subtasks.length > 0 && (
+              <div onClick={toggleLock}>
+                <LinkIcon
+                  isLinked={uiInfo?.isLocked}
+                  className="w-3 h-3 mr-2"
+                />
+              </div>
+            )}
+            <div onClick={destroyTab}>
+              <CloseIcon className="w-4 h-4 text-inherit" />
+            </div>
           </div>
         </div>
       </div>

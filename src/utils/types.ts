@@ -25,11 +25,15 @@ export interface IsOpenable {
   isOpened: boolean;
 }
 
+export interface Lockable {
+  isLocked: boolean;
+}
+
 export type ApiStatus = "idle" | "loading" | "succeeded" | "failed";
 
 export type TaskUIInfo = {
   status: ApiStatus;
-} & IsOpenable;
+} & IsOpenable & Lockable;
 
 export type TaskUIState = {
   [taskID: TaskID]: TaskUIInfo;

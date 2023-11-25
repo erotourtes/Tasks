@@ -10,6 +10,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 const defaultTaskUIInfo: () => TaskUIInfo = () => ({
   isOpened: false,
   status: "idle",
+  isLocked: true,
 });
 
 const setStatusForTasks = (
@@ -63,10 +64,20 @@ const taskUISlice = createSlice({
       };
       setStatusForTasks(state, payload);
     },
+    setLocked: (
+      state,
+      {
+        payload: { taskID, isLocked },
+      }: PayloadAction<{ taskID: TaskID; isLocked: boolean }>,
+    ) => {
+      const taskInfo = state.taskUIInfo[taskID];
+      if (!taskInfo) state.taskUIInfo[taskID] = defaultTaskUIInfo();
+      state.taskUIInfo[taskID].isLocked = isLocked;
+    },
   },
 });
 
 export default taskUISlice;
 
 const taskUIActions = taskUISlice.actions;
-export const { setOppened, setStatus, setTasksStatusSuccess } = taskUIActions;
+export const { setOppened, setStatus, setTasksStatusSuccess, setLocked } = taskUIActions;
