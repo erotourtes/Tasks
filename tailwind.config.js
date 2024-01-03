@@ -11,6 +11,7 @@ export default {
       },
       colors: {
         'dark-drop': 'rgba(0, 0, 0, 0.35)',
+        'light-drop': 'rgba(255, 255, 255, 0.75)', 
       }
     },
   },
