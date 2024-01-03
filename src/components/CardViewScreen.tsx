@@ -10,7 +10,7 @@ export default function CardViewScreen({
   onBackPressed,
 }: CardViewScreenProps) {
   return (
-    <div >
+    <div>
       <button className={`border-zinc-800 mb-3`} onClick={onBackPressed}>
         Click to go Back
       </button>

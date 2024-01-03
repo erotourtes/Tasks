@@ -7,12 +7,13 @@ import { useDispatch } from "react-redux";
 
 interface CardProps {
   task: Task;
+  onTaskClick: () => void;
   subtasks: Task[];
 }
 
 const taskText = (type: string) => (type === "Completed" ? "line-through" : "");
 
-export default function Card({ task, subtasks }: CardProps) {
+export default function Card({ task, subtasks, onTaskClick }: CardProps) {
   const cardHeight = 200;
 
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ export default function Card({ task, subtasks }: CardProps) {
       draft.description = description;
     });
 
-    updateTaskInstantly(dispatch, newTask)
+    updateTaskInstantly(dispatch, newTask);
     setIsEditing(false);
   };
 
@@ -71,6 +72,7 @@ export default function Card({ task, subtasks }: CardProps) {
 
       <ListContainer iterable={subtasks} />
 
+      <button onClick={onTaskClick}>Open</button>
       {isEditing && (
         <div className="bg-zinc-500 text-zinc-50 absolute rounded-lg bottom-2 right-2 space-x-2">
           <button
