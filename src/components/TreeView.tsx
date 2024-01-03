@@ -1,4 +1,10 @@
-import { MoveType, StoreState, Task, TaskID, TaskUIState } from "../utils/types.ts";
+import {
+  MoveType,
+  StoreState,
+  Task,
+  TaskID,
+  TaskUIState,
+} from "../utils/types.ts";
 import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
 import { TabNode } from "../utils/TabsMethods.ts";

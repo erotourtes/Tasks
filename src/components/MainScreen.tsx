@@ -29,7 +29,7 @@ export default function MainScreen() {
   return (
     <div
       ref={dropRef}
-      className={`w-full h-full relative dark:bg-zinc-700 p-4 overflow-y-auto`}
+      className={`w-full h-full relative dark:bg-zinc-700 p-4 overflow-y-auto dark:text-zinc-200`}
     >
       {screen}
 

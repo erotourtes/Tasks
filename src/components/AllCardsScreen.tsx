@@ -5,7 +5,7 @@ import Card from "./Card";
 
 interface AllCardsScreenProps {
   isOver: boolean;
-  onTaskClick: (task: Task) => void
+  onTaskClick: (task: Task) => void;
 }
 
 function AllCardsScreen({ isOver, onTaskClick }: AllCardsScreenProps) {
