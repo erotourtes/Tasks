@@ -1,5 +1,4 @@
 import "./App.css";
-import Movable from "./components/Movable";
 import TreeView from "./components/TreeView";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -7,6 +6,7 @@ import createStore from "@store/createStore";
 import { Provider } from "react-redux";
 import { useEffect } from "react";
 import { getTasks } from "./store/taskSlice";
+import MainScreen from "./components/MainScreen";
 
 const store = createStore();
 
@@ -19,7 +19,7 @@ function App() {
       isFirst = false;
       return;
     }
-    store.dispatch(getTasks())
+    store.dispatch(getTasks());
   }, []);
 
   return (
@@ -30,7 +30,7 @@ function App() {
             <TreeView />
 
             <div className="flex-1 overflow-y-auto">
-              <Movable />
+              <MainScreen />
             </div>
           </div>
         </DndProvider>

@@ -4,18 +4,21 @@ import { Task } from "@types";
 import { useSelector } from "react-redux";
 import DropArea from "./DropArea";
 import Card from "./Card";
+import { TabNode } from "@/utils/TabsMethods";
 
-function Movable() {
+interface MovableProps {
+  onMoveTaskToScreen: (task: Task) => void;
+}
+
+function Movable({ onMoveTaskToScreen }: MovableProps) {
   const tasks = useSelector<StoreState, Task[]>(
     (state) => state.entities.task.tasks,
   );
 
   const [{ isOver }, dropRef] = useDrop(() => ({
     accept: DragTypes.TAB,
-    drop: () => {
-      // setTasks((prev) =>
-      // prev.indexOf(item.tab) === -1 ? [...prev, item.tab] : prev,
-      // );
+    drop: (item: { id: string; tab: TabNode<Task> }) => {
+      onMoveTaskToScreen(item.tab.getForeign());
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
