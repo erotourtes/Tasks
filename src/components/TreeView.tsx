@@ -1,93 +1,106 @@
-import { useState } from "react";
-import { generateId } from "../utils/utils.ts";
-import { MoveType, Tab } from "../utils/types.ts";
-import * as Tabs from "../utils/TabsMethods.ts";
+import {
+  MoveType,
+  StoreState,
+  Task,
+  TaskID,
+  TaskUIState,
+} from "../utils/types.ts";
+import { Tabs } from "../utils/TabsMethods.ts";
 import TreeTab from "./TreeTab.tsx";
+import { TabNode } from "../utils/TabsMethods.ts";
+import { useDispatch, useSelector } from "react-redux";
+import * as actions from "@/store/taskSlice.ts";
+import * as uiActions from "@/store/taskUISlice.ts";
+import { createBlankTask } from "@/utils/utils.ts";
 
 function TreeView() {
   const treeViewWidth = 300;
-  const [tabs, setTabs] = useState<Tab[]>(Tabs.generateTabs());
 
-  const removeTab = (id: number) => {
-    const newTabs = [...tabs];
-    const tab = newTabs[id];
+  const dispatch = useDispatch();
+  const uiTasks = useSelector<StoreState, TaskUIState>(
+    (state) => state.ui.taskUI.taskUIInfo,
+  );
+  const tasks = useSelector<StoreState, Task[]>(
+    (state) => state.entities.task.tasks,
+  );
+  const loading = useSelector<StoreState, boolean>(
+    (state) => state.entities.task.loading,
+  );
 
-    if (tab.isOpen) Tabs.sRemoveTab(newTabs, tab);
-    else Tabs.sRemoveTabAndChildren(newTabs, id);
+  const str = new Tabs(tasks, uiTasks);
 
-    setTabs(newTabs);
+  const notFromServer = (taskID: TaskID) => taskID.startsWith("CUSTOM_ID");
+
+  const markAsDone = (task: Task) => {
+    if (notFromServer(task.id)) return;
+    const isLocked = uiTasks[task.id]?.isLocked;
+    if (isLocked) actions.markTaskAsDoneRecInstantly(dispatch, task, tasks);
+    else actions.markTaskAsDoneInstantly(dispatch, task);
   };
 
-  const toggleOpen = (id: number) => {
-    const newTabs = [...tabs];
-    const tab = newTabs[id];
+  const craeteTask = () =>
+    actions.addTaskInstantly(dispatch, createBlankTask());
 
-    tab.isOpen = !tab.isOpen;
-    Tabs.sToggleHideForChildren(tab, !tab.isOpen);
-
-    setTabs(newTabs);
+  const toggleOpen = (task: Task) => {
+    if (notFromServer(task.id)) return;
+    const taskUI = uiTasks[task.id];
+    const isOppened = taskUI?.isOpened;
+    dispatch(uiActions.setOppened({ taskID: task.id, isOpened: !isOppened }));
   };
 
-  console.log(tabs);
+  const toggleLock = (task: Task) => {
+    if (notFromServer(task.id)) return;
+    const taskUI = uiTasks[task.id];
+    const isLocked = taskUI?.isLocked;
+    dispatch(uiActions.setLocked({ taskID: task.id, isLocked: !isLocked }));
+  };
 
-  const moveTab = (srcIndex: string, dstIndex: number, type: MoveType) => {
-    const newTabs = [...tabs];
-    const dstTab = newTabs[dstIndex];
-    const srcTab = Tabs.sFindTab(newTabs, srcIndex);
-    if (!srcTab) throw new Error("Severe error: srcTab not found");
+  const moveTab = (srcIndex: string, dstIndex: string, type: MoveType) => {
+    const f1 = str.getForeign(srcIndex);
+    const f2 = str.getForeign(dstIndex);
+    if (notFromServer(f1.id) || notFromServer(f2.id)) return;
+    const synced = str.moveForeign(srcIndex, dstIndex, type).syncForeignData();
 
-    if (dstTab.id === srcTab.id) return;
+    dispatch(actions.setTasks(synced));
+  };
 
-    if (type === "inside") {
-      Tabs.sMoveTabInside(newTabs, srcTab, dstTab);
-    } else if (type === "after") {
-      // Tabs.sInsertTabAfter(newTabs, srcIndex, dstTab);
-    } else {
-      throw new Error("Invalid move type");
-    }
-
-    setTabs(newTabs);
+  const renderTabs = (tabs?: TabNode<Task>[]) => {
+    return tabs?.map((tab) => {
+      const task = tab.getForeign();
+      return (
+        <TreeTab
+          key={tab.id}
+          tab={tab}
+          destroyTab={() => markAsDone(task)}
+          toggleOpen={() => toggleOpen(task)}
+          toggleLock={() => toggleLock(task)}
+          moveTab={(srcID, type) => moveTab(srcID, tab.id, type)}
+          uiInfo={uiTasks[task.id]}
+        >
+          {(tab.isOpen || !tab.hasChildren) && renderTabs(tab.__children)}
+        </TreeTab>
+      );
+    });
   };
 
   return (
     <>
       <div
         style={{ width: treeViewWidth }}
-        className="dark:bg-zinc-950 dark:text-zinc-200 overflow-y-auto space-y-2 p-2"
+        className="dark:bg-zinc-950 dark:text-zinc-200 overflow-y-auto p-2"
       >
-        {tabs.map((tab, index) => {
-          if (tab.isHidden) return;
-
-          return (
-            <TreeTab
-              key={tab.id}
-              tab={tab}
-              toggleOpen={() => toggleOpen(index)}
-              destroyTab={() => removeTab(index)}
-              moveTab={(sourceTab, type: MoveType) =>
-                moveTab(sourceTab, index, type)
-              }
-            />
-          );
-        })}
+        {renderTabs(str.flatRoot)}
 
         <button
-          className="dark:hover:bg-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300"
-          onClick={() =>
-            setTabs([
-              ...tabs,
-              {
-                title: `Tab ${tabs.length + 1}`,
-                level: 0,
-                id: generateId(),
-                isOpen: true,
-                isHidden: false,
-                children: [],
-              },
-            ])
-          }
+          className={`dark:hover:bg-zinc-700 hover:bg-zinc-300 px-2 py-2 w-full rounded-lg border dark:border-zinc-700 border-zinc-300 ${
+            loading
+              ? "dark:text-orange-300 text-orange-700"
+              : "dark:text-zinc-200"
+          }`}
+          disabled={loading}
+          onClick={craeteTask}
         >
-          Add Tab
+          Add Task
         </button>
       </div>
     </>
