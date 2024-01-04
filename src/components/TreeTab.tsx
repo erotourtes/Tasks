@@ -109,12 +109,13 @@ function TreeTab({
       )}
 
       <div
+        style={{ height: "38px" }} // TODO: chnage this
         ref={(node) => dragRef(dropRef(node))}
         className={`text-inherit w-full flex ${isDragging && "opacity-50"}`}
       >
         <div
           className={`flex box-border flex-1 relative items-center py-2 rounded-lg ${howeverText} 
-            border
+            border overflow-x-hidden
             ${
               isOver
                 ? "dark:border-zinc-200 border-zinc-800"
@@ -124,10 +125,7 @@ function TreeTab({
             ${task.status === "done" && "opacity-50 line-through"}
 `}
         >
-          <span
-            className={`mr-2 ${!isOpen && "-rotate-90"}`}
-            onClick={toggleOpen}
-          >
+          <span className={`${!isOpen && "-rotate-90"}`} onClick={toggleOpen}>
             {tab.hasChildren && <ArrowIcon className="w-4 h-4" />}
           </span>
           <div className="pr-2">
