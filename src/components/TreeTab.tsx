@@ -72,7 +72,7 @@ function TreeTab({
   moveTab,
   uiInfo,
 }: TreeTabProps) {
-  const { level, isOpen } = tab.state;
+  const { isOpen } = tab.state;
   const task = tab.getForeign();
 
   const [{ isDragging }, dragRef] = useDrag(
@@ -136,12 +136,7 @@ function TreeTab({
               <span className="text-red-500">!</span>
             )}
           </div>
-          <p className="text-sm font-bold line-clamp-1">
-            {`${task.title} ${level} ${tab.id.slice(
-              0,
-              2,
-            )} ${tab.__parent?.id.slice(0, 2)}`}
-          </p>
+          <p className="text-sm font-bold line-clamp-1">{`${task.title}`}</p>
 
           <div
             className={`text-sm font-bold cursor-pointer flex items-center absolute right-2 top-1/2 transform -translate-y-1/2 ${howeverText}`}
