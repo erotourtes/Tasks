@@ -3,7 +3,7 @@ import { Task } from "../types";
 export const dummyTasks: Task[] = [
   {
     id: "1",
-    title: "Task 1",
+    title: "You can",
     status: "todo",
     description: "Description 1",
     createdAt: "2021-08-01",
@@ -13,7 +13,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "2",
-    title: "Task 2",
+    title: "reorder tasks",
     status: "todo",
     description: "Description 2",
     createdAt: "2021-08-02",
@@ -23,7 +23,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "3",
-    title: "Task 3",
+    title: "in the left sidebar",
     status: "todo",
     description: "Description 3",
     createdAt: "2021-08-01",
@@ -33,7 +33,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "4",
-    title: "Task 4",
+    title: "Toggle the visibility",
     status: "todo",
     description: "Description 4",
     createdAt: "2021-08-02",
@@ -43,7 +43,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "5",
-    title: "Task 5",
+    title: "of the subtasks",
     status: "todo",
     description: "Description 5",
     createdAt: "2021-08-01",
@@ -53,7 +53,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "6",
-    title: "Task 6",
+    title: "with the arrow icon",
     status: "todo",
     description: "Description 6",
     createdAt: "2021-08-02",
@@ -63,7 +63,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "7",
-    title: "Task 7",
+    title: "Lock/Unlock the task",
     status: "todo",
     description: "Description 7",
     createdAt: "2021-08-01",
@@ -73,7 +73,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "8",
-    title: "Task 8",
+    title: "to apply changes",
     status: "todo",
     description: "Description 8",
     createdAt: "2021-08-02",
@@ -83,7 +83,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "9",
-    title: "Task 9",
+    title: "to subtasks",
     status: "todo",
     description: "Description 9",
     createdAt: "2021-08-01",
@@ -93,7 +93,7 @@ export const dummyTasks: Task[] = [
   },
   {
     id: "10",
-    title: "Task 10",
+    title: "HF!",
     status: "todo",
     description: "Description 10",
     createdAt: "2021-08-02",
