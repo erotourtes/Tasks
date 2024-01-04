@@ -14,4 +14,5 @@ export default defineConfig({
       "@dummies": "/src/utils/data",
     },
   },
+  base: "/Tasks/"
 });
